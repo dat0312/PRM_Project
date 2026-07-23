@@ -1,0 +1,130 @@
+@page
+@model Web_App.Pages.Admin.Clubs.AddModel
+@{
+    var isEditing = Model.Id.HasValue;
+    var pageTitle = isEditing ? "Sửa câu lạc bộ" : "Thêm câu lạc bộ mới";
+}
+
+<div class="mb-4">
+    <div style="font-size: 14px; color: #757575;">
+        <a href="/Admin/Clubs" class="text-decoration-none" style="color: #9E9E9E;">Câu lạc bộ</a>
+        <span class="mx-2">&gt;</span>
+        <span class="fw-bold text-dark">@pageTitle</span>
+    </div>
+</div>
+
+<div class="card shadow-sm" style="border-radius: 12px; border: 1px solid #E0E0E0; background-color: #FFFFFF;">
+    <div class="card-body" style="padding: 32px;">
+        
+        <div class="d-flex align-items-center mb-4">
+            <div class="rounded d-flex justify-content-center align-items-center me-3" style="background-color: #FFF0E6; color: #D65B1A; width: 48px; height: 48px;">
+                <i class="fa-solid @(isEditing ? "fa-edit" : "fa-plus") fs-5"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-1 text-dark" style="font-size: 20px;">@pageTitle</h5>
+                <p class="text-muted mb-0" style="font-size: 14px;">Vui lòng điền đầy đủ thông tin để @(isEditing ? "cập nhật" : "tạo") CLB.</p>
+            </div>
+        </div>
+
+        <hr style="border-color: #EEEEEE; margin: 24px 0 32px 0;" />
+
+        <form method="post">
+            <input type="hidden" asp-for="Id" />
+            
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-6 pe-md-4">
+                    <div class="mb-4">
+                        <label asp-for="Name" class="form-label fw-bold" style="font-size: 13px; color: #9E9E9E;">Tên câu lạc bộ</label>
+                        <input asp-for="Name" class="form-control" placeholder="CLB Mỹ thuật sáng tạo" style="border-radius: 6px; padding: 14px 16px; border: 1px solid #E0E0E0; font-size: 15px;" required />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="PresidentId" class="form-label fw-bold" style="font-size: 13px; color: #9E9E9E;">Chủ nhiệm</label>
+                        <div class="position-relative">
+                            <input class="form-control" list="presidentOptions" id="PresidentInput" placeholder="Nhập ID (VD: STU..., GVBB...) hoặc tên..." style="border-radius: 6px; padding: 14px 16px; padding-right: 40px; border: 1px solid #E0E0E0; font-size: 15px;" onchange="updateHiddenPresidentId()" autocomplete="off">
+                            <datalist id="presidentOptions">
+                                @foreach (var user in Model.Users)
+                                {
+                                    <option data-id="@user.Id" value="@user.Code - @user.Name"></option>
+                                }
+                            </datalist>
+                            <input type="hidden" asp-for="PresidentId" id="HiddenPresidentId" />
+                            <i class="fa-solid fa-search position-absolute" style="right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #757575;"></i>
+                        </div>
+                        <span asp-validation-for="PresidentId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Type" class="form-label fw-bold" style="font-size: 13px; color: #9E9E9E;">Thể loại</label>
+                        <select asp-for="Type" class="form-select" style="border-radius: 6px; padding: 14px 16px; border: 1px solid #E0E0E0; font-size: 15px;">
+                            <option value="Nghệ thuật & Văn hóa">Nghệ thuật & Văn hóa</option>
+                            <option value="Thể thao">Thể thao</option>
+                            <option value="Học thuật">Học thuật</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Status" class="form-label fw-bold" style="font-size: 13px; color: #9E9E9E;">Trạng thái</label>
+                        <select asp-for="Status" class="form-select" style="border-radius: 6px; padding: 14px 16px; border: 1px solid #E0E0E0; font-size: 15px;">
+                            <option value="HOẠT ĐỘNG">HOẠT ĐỘNG</option>
+                            <option value="TẠM NGỪNG">TẠM NGỪNG</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6 ps-md-4">
+                    <div class="mb-4 h-100">
+                        <label asp-for="Description" class="form-label fw-bold" style="font-size: 13px; color: #9E9E9E;">Mô tả câu lạc bộ</label>
+                        <textarea asp-for="Description" class="form-control h-100" style="min-height: 380px; border-radius: 6px; padding: 16px; border: 1px solid #E0E0E0; font-size: 15px;" placeholder="Nhập tóm tắt hoạt động và mục tiêu của câu lạc bộ..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border-color: #EEEEEE; margin: 48px 0 24px 0;" />
+
+            <div class="d-flex justify-content-end">
+                <a href="/Admin/Clubs" class="btn btn-outline-secondary px-4 py-2 me-3 fw-bold" style="border-radius: 6px; border-color: #9E9E9E; color: #424242;">Hủy</a>
+                <button type="submit" class="btn text-white px-4 py-2 fw-bold" style="background-color: #E65100; border-radius: 6px; border: none;">Lưu câu lạc bộ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Setup initial value for edit mode
+        const hiddenInput = document.getElementById('HiddenPresidentId');
+        const visibleInput = document.getElementById('PresidentInput');
+        
+        @if (Model.PresidentId.HasValue)
+        {
+            var pUser = Model.Users.FirstOrDefault(u => u.Id == Model.PresidentId.Value);
+            if (pUser != null)
+            {
+                <text>
+                visibleInput.value = '@pUser.Code - @pUser.Name';
+                </text>
+            }
+        }
+
+        function updateHiddenPresidentId() {
+            const inputValue = visibleInput.value;
+            const options = document.getElementById('presidentOptions').options;
+            let foundId = "";
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === inputValue) {
+                    foundId = options[i].getAttribute('data-id');
+                    break;
+                }
+            }
+            hiddenInput.value = foundId;
+        }
+    </script>
+}

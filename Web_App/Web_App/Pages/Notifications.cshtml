@@ -1,0 +1,235 @@
+@page
+@model Web_App.Pages.NotificationsModel
+@{
+    ViewData["Title"] = "Thông báo";
+    Layout = "_Layout";
+}
+
+<style>
+    .page-header {
+        margin-bottom: 24px;
+    }
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1E1E1E;
+        margin: 0;
+    }
+    
+    .notification-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .notification-card {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .notification-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .notification-card.unread {
+        background-color: #E3F2FD;
+    }
+
+    .notification-card.read {
+        background-color: #FFFFFF;
+    }
+
+    .notification-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 16px;
+        flex-shrink: 0;
+    }
+
+    .notification-card.unread .notification-icon {
+        color: #2196F3;
+        background-color: rgba(33, 150, 243, 0.1);
+    }
+
+    .notification-card.read .notification-icon {
+        color: #9E9E9E;
+        background-color: #F5F5F5;
+    }
+
+    .notification-content {
+        flex-grow: 1;
+    }
+
+    .notification-title {
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        color: #1E1E1E;
+    }
+
+    .notification-card.unread .notification-title {
+        font-weight: bold;
+    }
+
+    .notification-message {
+        margin: 0;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 48px;
+        color: #666;
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">Thông báo</h1>
+</div>
+
+<div id="loading" style="text-align:center; padding: 48px;">
+    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #F27024;"></i>
+    <p style="margin-top: 16px; color: #666;">Đang tải thông báo...</p>
+</div>
+
+<div id="emptyState" class="empty-state" style="display: none;">
+    <i class="fas fa-bell-slash" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+    <p>Không có thông báo nào.</p>
+</div>
+
+<div class="notification-list" id="notificationList" style="display: none;">
+</div>
+
+<script>
+    let notifications = [];
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadNotifications();
+    });
+
+    async function loadNotifications() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('notificationList').style.display = 'none';
+
+        try {
+            const res = await fetch(`/api/web/notification?_t=${new Date().getTime()}`);
+            if (res.ok) {
+                notifications = await res.json();
+                renderNotifications();
+            } else {
+                console.error("Failed to load notifications");
+                document.getElementById('loading').style.display = 'none';
+            }
+        } catch(e) {
+            console.error(e);
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    function renderNotifications() {
+        document.getElementById('loading').style.display = 'none';
+        const listDiv = document.getElementById('notificationList');
+        const emptyDiv = document.getElementById('emptyState');
+        listDiv.innerHTML = '';
+
+        if (!notifications || notifications.length === 0) {
+            emptyDiv.style.display = 'block';
+            listDiv.style.display = 'none';
+            return;
+        }
+
+        emptyDiv.style.display = 'none';
+        listDiv.style.display = 'flex';
+
+        notifications.forEach(n => {
+            const card = document.createElement('div');
+            card.className = `notification-card ${n.isRead ? 'read' : 'unread'}`;
+            
+            const iconClass = n.isRead ? 'far fa-bell' : 'fas fa-bell';
+            
+            card.innerHTML = `
+                <div class="notification-icon">
+                    <i class="${iconClass} fa-lg"></i>
+                </div>
+                <div class="notification-content">
+                    <p class="notification-title">${escapeHtml(n.title)}</p>
+                    <p class="notification-message">${escapeHtml(n.message)}</p>
+                </div>
+            `;
+            
+            card.onclick = () => handleNotificationClick(n);
+            listDiv.appendChild(card);
+        });
+    }
+
+    async function handleNotificationClick(n) {
+        if (!n.isRead) {
+            try {
+                await fetch(`/api/web/notification/${n.id}/read`, { method: 'PUT' });
+                n.isRead = true;
+                // Update visually immediately
+                renderNotifications();
+            } catch(e) {
+                console.error("Lỗi kết nối", e);
+            }
+        }
+
+        const role = '@Model.UserRole';
+        const isAdmin = role === 'Admin';
+        const isTeacher = role === 'Teacher';
+
+        // Navigation logic matching Flutter
+        const titleLower = n.title.toLowerCase();
+        
+        if (titleLower.includes('clb') || titleLower.includes('câu lạc bộ')) {
+            if (isAdmin) window.location.href = '/Admin/Clubs';
+            // Teacher doesn't have a Club web page in sidebar yet, default to schedule or maybe they do?
+            return;
+        }
+
+        if (titleLower.includes('đơn xin báo nghỉ') || titleLower.includes('đơn xin dạy bù')) {
+            if (isAdmin) {
+                window.location.href = `/Admin/Schedules${n.relatedRequestId ? '?openRequestId=' + n.relatedRequestId : ''}`;
+            } else if (isTeacher) {
+                window.location.href = `/Teacher/Schedule`;
+            }
+            return;
+        }
+
+        if (titleLower.includes('đơn') || titleLower.includes('tin nhắn') || titleLower.includes('yêu cầu')) {
+            if (isAdmin) {
+                window.location.href = `/Admin/Requests${n.relatedRequestId ? '?openId=' + n.relatedRequestId : ''}`;
+            } else if (isTeacher) {
+                window.location.href = `/Teacher/Requests`; // Assuming Teacher has Requests page
+            }
+            return;
+        }
+
+        if (isAdmin) {
+            window.location.href = '/Admin/Schedules';
+        } else if (isTeacher) {
+            window.location.href = '/Teacher/Schedule';
+        }
+    }
+
+    function escapeHtml(unsafe) {
+        if (!unsafe) return "";
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+</script>

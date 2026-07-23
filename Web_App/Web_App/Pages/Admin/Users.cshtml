@@ -1,0 +1,622 @@
+@page
+@model Web_App.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    ViewData["ActiveMenu"] = "Users";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
+    .page-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1A1C1C;
+        margin: 0 0 4px 0;
+    }
+    .page-subtitle {
+        color: #888;
+        font-size: 14px;
+        margin: 0;
+    }
+    .btn-add {
+        background-color: #A04100;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .summary-cards {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .summary-card {
+        flex: 1;
+        background: white;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+    }
+    .icon-student { background-color: #FFFFDBCC; color: #A04100; }
+    .icon-teacher { background-color: #D1E4FF; color: #00497C; }
+    
+    .tabs-container {
+        background: white;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    .tabs-header {
+        display: flex;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .tab-btn {
+        padding: 16px 32px;
+        border: none;
+        background: none;
+        font-weight: 600;
+        color: #888;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+    }
+    .tab-btn.active {
+        color: #A04100;
+        border-bottom: 2px solid #A04100;
+    }
+    
+    .filters {
+        padding: 16px;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .search-input {
+        width: 100%;
+        padding: 10px 16px 10px 40px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        box-sizing: border-box;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 12px center;
+    }
+    .dropdown-group {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+    }
+    .dropdown-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .dropdown-col select {
+        padding: 10px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+    }
+    .btn-reset {
+        background: #EEEEEE;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th {
+        background: #F9F9F9;
+        color: #888;
+        font-weight: bold;
+        font-size: 12px;
+        text-align: left;
+        padding: 14px 16px;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .data-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #EEEEEE;
+        font-size: 13px;
+    }
+    .action-btns {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+    }
+    .action-btns i {
+        cursor: pointer;
+    }
+    
+    /* Dialog Styles */
+    dialog {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 24px;
+        width: 400px;
+        max-width: 90%;
+    }
+    dialog::backdrop {
+        background: rgba(0,0,0,0.5);
+    }
+    .dialog-header {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 16px;
+    }
+    .dialog-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 24px;
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 4px;
+        font-weight: bold;
+        font-size: 13px;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #CCC;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quản lý người dùng</h1>
+        <p class="page-subtitle">Xem và quản lý tất cả học sinh và giáo viên trong hệ thống.</p>
+    </div>
+    <a href="/Admin/UserForm" class="btn-add" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;"><i class="fa-solid fa-plus"></i> Thêm người dùng</a>
+</div>
+
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="icon-box icon-student" style="background-color: #FFDBCC;"><i class="fa-solid fa-school"></i></div>
+        <div>
+            <div style="color: #888; font-size: 14px;">Tổng số học sinh</div>
+            <div style="font-size: 24px; font-weight: bold;" id="total-students">0</div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="icon-box icon-teacher" style="background-color: #D1E4FF;"><i class="fa-solid fa-person-chalkboard"></i></div>
+        <div>
+            <div style="color: #888; font-size: 14px;">Tổng số giáo viên</div>
+            <div style="font-size: 24px; font-weight: bold;" id="total-teachers">0</div>
+        </div>
+    </div>
+</div>
+
+<div class="tabs-container">
+    <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab(0)">Học sinh</button>
+        <button class="tab-btn" onclick="switchTab(1)">Giáo viên</button>
+    </div>
+    
+    <!-- Tab Học sinh -->
+    <div id="tab-student">
+        <div class="filters">
+            <input type="text" class="search-input" id="searchStudent" placeholder="Tìm kiếm theo tên, ID, số điện thoại..." oninput="applyFilters()">
+            <div class="dropdown-group">
+                <div class="dropdown-col">
+                    <label style="font-weight:bold; font-size:13px;">Khối</label>
+                    <select id="filterGrade" onchange="applyFilters()">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <div class="dropdown-col">
+                    <label style="font-weight:bold; font-size:13px;">Khóa</label>
+                    <select id="filterCohort" onchange="applyFilters()">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <div class="dropdown-col">
+                    <label style="font-weight:bold; font-size:13px;">Lớp</label>
+                    <select id="filterClass" onchange="applyFilters()">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <button class="btn-reset" onclick="resetStudentFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> Đặt lại</button>
+            </div>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th width="10%">MÃ SỐ</th>
+                    <th width="20%">TÊN</th>
+                    <th width="15%">SĐT</th>
+                    <th width="20%">EMAIL</th>
+                    <th width="10%">KHÓA</th>
+                    <th width="10%">KHỐI</th>
+                    <th width="10%">LỚP</th>
+                    <th width="5%" style="text-align:center;">HÀNH ĐỘNG</th>
+                </tr>
+            </thead>
+            <tbody id="student-tbody"></tbody>
+        </table>
+    </div>
+
+    <!-- Tab Giáo viên -->
+    <div id="tab-teacher" style="display: none;">
+        <div class="filters">
+            <input type="text" class="search-input" id="searchTeacher" placeholder="Tìm kiếm theo tên, ID, số điện thoại..." oninput="applyFilters()">
+            <div class="dropdown-group">
+                <div class="dropdown-col">
+                    <label style="font-weight:bold; font-size:13px;">Nhóm môn</label>
+                    <select id="filterSubject" onchange="applyFilters()">
+                        <option value="">Tất cả</option>
+                        <option value="Bắt buộc">Bắt buộc</option>
+                        <option value="Tự nhiên">Tự nhiên</option>
+                        <option value="Xã hội">Xã hội</option>
+                    </select>
+                </div>
+                <div class="dropdown-col"></div>
+                <div class="dropdown-col"></div>
+                <button class="btn-reset" onclick="resetTeacherFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> Đặt lại</button>
+            </div>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th width="10%">MÃ SỐ</th>
+                    <th width="20%">TÊN</th>
+                    <th width="15%">SĐT</th>
+                    <th width="20%">EMAIL</th>
+                    <th width="15%">NHÓM MÔN</th>
+                    <th width="15%">CHỦ NHIỆM</th>
+                    <th width="5%" style="text-align:center;">HÀNH ĐỘNG</th>
+                </tr>
+            </thead>
+            <tbody id="teacher-tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Chọn lớp chủ nhiệm -->
+<dialog id="homeroomDialog">
+    <div class="dialog-header">Chọn lớp chủ nhiệm</div>
+    <input type="hidden" id="homeroomTeacherId">
+    
+    <div class="form-group">
+        <label>Khóa (Mặc định khóa mới nhất)</label>
+        <input type="text" id="homeroomCohort" disabled style="background:#EEE;">
+    </div>
+    
+    <div class="form-group">
+        <label>Khối</label>
+        <select id="homeroomGrade" onchange="filterHomeroomClasses()">
+            <option value="">-- Chọn Khối --</option>
+            <option value="10">Khối 10</option>
+            <option value="11">Khối 11</option>
+            <option value="12">Khối 12</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Lớp</label>
+        <select id="homeroomClassId">
+            <option value="">Không làm chủ nhiệm</option>
+        </select>
+    </div>
+    
+    <div class="dialog-footer">
+        <button type="button" class="btn-reset" onclick="document.getElementById('homeroomDialog').close()">Hủy</button>
+        <button type="button" class="btn-add" onclick="saveHomeroomTeacher()">Lưu</button>
+    </div>
+</dialog>
+
+<script>
+    let currentTab = 0; // 0: Student, 1: Teacher
+    let allUsers = [];
+    let allClasses = [];
+    let allSubjects = [];
+    let selectedSubjectIds = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadData();
+    });
+
+    function switchTab(index) {
+        currentTab = index;
+        const btns = document.querySelectorAll('.tab-btn');
+        btns[0].classList.toggle('active', index === 0);
+        btns[1].classList.toggle('active', index === 1);
+        
+        document.getElementById('tab-student').style.display = index === 0 ? 'block' : 'none';
+        document.getElementById('tab-teacher').style.display = index === 1 ? 'block' : 'none';
+        
+        applyFilters();
+    }
+
+    async function loadData() {
+        try {
+            const [usersRes, classesRes, subjectsRes] = await Promise.all([
+                fetch('/api/web/user/users'),
+                fetch('/api/web/user/classes'),
+                fetch('/api/web/user/subjects')
+            ]);
+            
+            allUsers = await usersRes.json();
+            allClasses = await classesRes.json();
+            allSubjects = await subjectsRes.json();
+            
+            updateSummary();
+            populateDropdowns();
+            applyFilters();
+        } catch (e) {
+            alert("Lỗi tải dữ liệu: " + e.message);
+        }
+    }
+
+    function updateSummary() {
+        const students = allUsers.filter(u => u.roles && u.roles.includes('Student')).length;
+        const teachers = allUsers.filter(u => u.roles && u.roles.includes('Teacher')).length;
+        document.getElementById('total-students').innerText = students;
+        document.getElementById('total-teachers').innerText = teachers;
+    }
+
+    function populateDropdowns() {
+        const grades = [...new Set(allUsers.filter(u => u.grade && u.grade !== '-').map(u => u.grade))].sort();
+        const cohorts = [...new Set(allUsers.filter(u => u.cohort && u.cohort !== '-').map(u => u.cohort))].sort();
+        const classes = [...new Set(allUsers.filter(u => u.className && u.className !== '-').map(u => u.className))].sort();
+
+        fillSelect('filterGrade', grades);
+        fillSelect('filterCohort', cohorts);
+        fillSelect('filterClass', classes);
+    }
+
+    function fillSelect(id, items) {
+        const select = document.getElementById(id);
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Tất cả</option>';
+        items.forEach(item => {
+            select.innerHTML += `<option value="${item}">${item}</option>`;
+        });
+        select.value = currentVal;
+    }
+
+    function applyFilters() {
+        if (currentTab === 0) {
+            const search = document.getElementById('searchStudent').value.toLowerCase();
+            const grade = document.getElementById('filterGrade').value;
+            const cohort = document.getElementById('filterCohort').value;
+            const cls = document.getElementById('filterClass').value;
+
+            const filtered = allUsers.filter(u => {
+                if (!u.roles || !u.roles.includes('Student')) return false;
+                const matchSearch = (u.name||'').toLowerCase().includes(search) || 
+                                    (u.phoneNumber||'').toLowerCase().includes(search) ||
+                                    (u.code||u.id||'').toString().toLowerCase().includes(search);
+                const matchGrade = !grade || u.grade == grade;
+                const matchCohort = !cohort || u.cohort == cohort;
+                const matchClass = !cls || u.className == cls;
+                return matchSearch && matchGrade && matchCohort && matchClass;
+            });
+            renderStudents(filtered);
+        } else {
+            const search = document.getElementById('searchTeacher').value.toLowerCase();
+            const group = document.getElementById('filterSubject').value;
+
+            const filtered = allUsers.filter(u => {
+                if (!u.roles || !u.roles.includes('Teacher')) return false;
+                const matchSearch = (u.name||'').toLowerCase().includes(search) || 
+                                    (u.phoneNumber||'').toLowerCase().includes(search) ||
+                                    (u.code||u.id||'').toString().toLowerCase().includes(search);
+                const matchGroup = !group || u.subjectGroup == group;
+                return matchSearch && matchGroup;
+            });
+            renderTeachers(filtered);
+        }
+    }
+
+    function resetStudentFilters() {
+        document.getElementById('searchStudent').value = '';
+        document.getElementById('filterGrade').value = '';
+        document.getElementById('filterCohort').value = '';
+        document.getElementById('filterClass').value = '';
+        applyFilters();
+    }
+
+    function resetTeacherFilters() {
+        document.getElementById('searchTeacher').value = '';
+        document.getElementById('filterSubject').value = '';
+        applyFilters();
+    }
+
+    function renderStudents(list) {
+        const tbody = document.getElementById('student-tbody');
+        tbody.innerHTML = list.map(u => `
+            <tr>
+                <td style="color:#A04100; font-weight:600;">${u.code || u.id}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="width:24px; height:24px; border-radius:50%; background:#EEE; text-align:center; line-height:24px;">
+                            ${(u.name || '?').charAt(0).toUpperCase()}
+                        </div>
+                        ${u.name || '-'}
+                    </div>
+                </td>
+                <td>${u.phoneNumber || '-'}</td>
+                <td>${u.email || '-'}</td>
+                <td>${u.cohort || '-'}</td>
+                <td>${u.grade || '-'}</td>
+                <td>${u.className || '-'}</td>
+                <td>
+                    <div class="action-btns">
+                        <a href="/Admin/UserForm/${u.id}" style="color: #007bff;"><i class="fa-solid fa-pen"></i></a>
+                        <i class="fa-solid fa-trash" style="color: red;" onclick="deleteUser(${u.id})"></i>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderTeachers(list) {
+        const tbody = document.getElementById('teacher-tbody');
+        tbody.innerHTML = list.map(u => `
+            <tr>
+                <td style="color:#00497C; font-weight:600;">${u.code || u.id}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="width:24px; height:24px; border-radius:50%; background:#EEE; text-align:center; line-height:24px;">
+                            ${(u.name || '?').charAt(0).toUpperCase()}
+                        </div>
+                        ${u.name || '-'}
+                    </div>
+                </td>
+                <td>${u.phoneNumber || '-'}</td>
+                <td>${u.email || '-'}</td>
+                <td style="font-weight:bold;">${u.subjectGroup || '-'}</td>
+                <td style="cursor:pointer;" onclick="openHomeroomDialog(${u.id})">
+                    ${(u.className && u.className !== '-') ? `<span style="color:red; font-weight:bold;">${u.className} (${u.cohort})</span>` : '<span style="color:grey; text-decoration:underline;">Thêm lớp chủ nhiệm</span>'}
+                </td>
+                <td>
+                    <div class="action-btns">
+                        <a href="/Admin/UserForm/${u.id}" style="color: #007bff;"><i class="fa-solid fa-pen"></i></a>
+                        <i class="fa-solid fa-trash" style="color: red;" onclick="deleteUser(${u.id})"></i>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openHomeroomDialog(teacherId) {
+        document.getElementById('homeroomTeacherId').value = teacherId;
+        
+        // Find latest cohort
+        const cohortsNum = allClasses.map(c => parseInt((c.cohort||'').replace(/\D/g,''))).filter(n => !isNaN(n));
+        const latestCohortNum = cohortsNum.length > 0 ? Math.max(...cohortsNum) : null;
+        const latestCohortStr = latestCohortNum ? `K${latestCohortNum}` : '';
+
+        document.getElementById('homeroomCohort').value = latestCohortStr;
+        
+        // Get teacher info
+        const teacher = allUsers.find(u => u.id === teacherId);
+        
+        if (teacher && teacher.classId) {
+            // Find class to get grade
+            const tClass = allClasses.find(c => c.id == teacher.classId);
+            if (tClass) {
+                document.getElementById('homeroomGrade').value = tClass.grade.toString();
+            } else {
+                document.getElementById('homeroomGrade').value = "";
+            }
+        } else {
+            document.getElementById('homeroomGrade').value = "";
+        }
+
+        filterHomeroomClasses(teacherId);
+
+        if (teacher && teacher.classId) {
+            document.getElementById('homeroomClassId').value = teacher.classId;
+        }
+
+        document.getElementById('homeroomDialog').showModal();
+    }
+
+    function filterHomeroomClasses(passedTeacherId = null) {
+        const teacherId = passedTeacherId || parseInt(document.getElementById('homeroomTeacherId').value);
+        const cohortStr = document.getElementById('homeroomCohort').value;
+        const gradeStr = document.getElementById('homeroomGrade').value;
+
+        const select = document.getElementById('homeroomClassId');
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Không làm chủ nhiệm</option>';
+
+        if (cohortStr && gradeStr) {
+            allClasses.forEach(c => {
+                if (c.cohort === cohortStr && c.grade.toString() === gradeStr) {
+                    if (!c.homeroomTeacherId || c.homeroomTeacherId === teacherId) {
+                        select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                    }
+                }
+            });
+        }
+        
+        // try to restore value
+        if ([...select.options].some(o => o.value == currentVal)) {
+            select.value = currentVal;
+        }
+    }
+
+    async function saveHomeroomTeacher() {
+        const teacherId = parseInt(document.getElementById('homeroomTeacherId').value);
+        const classIdVal = document.getElementById('homeroomClassId').value;
+        const classId = classIdVal ? parseInt(classIdVal) : null;
+
+        const teacher = allUsers.find(u => u.id === teacherId);
+        if (!teacher) return;
+
+        const payload = {
+            FullName: teacher.name,
+            Role: 'Teacher',
+            ClassId: classId,
+            SubjectGroup: teacher.subjectGroup,
+            SubjectIds: teacher.subjectIds || []
+        };
+
+        try {
+            const res = await fetch(`/api/web/user/edit/${teacherId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                document.getElementById('homeroomDialog').close();
+                await loadData();
+            } else {
+                const err = await res.text();
+                alert("Lỗi: " + err);
+            }
+        } catch (e) {
+            alert("Lỗi kết nối: " + e.message);
+        }
+    }
+
+    async function deleteUser(id) {
+        if (!confirm("Bạn có chắc chắn muốn xóa người dùng này?")) return;
+        try {
+            const res = await fetch(`/api/web/user/delete/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                await loadData();
+            } else {
+                alert("Lỗi xóa: " + await res.text());
+            }
+        } catch (e) {
+            alert("Lỗi kết nối: " + e.message);
+        }
+    }
+</script>

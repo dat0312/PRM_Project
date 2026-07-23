@@ -1,0 +1,429 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Quản lý Giáo viên - MyFSchool Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+<script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "surface": "#f9f9f9",
+                            "secondary-fixed-dim": "#c8c6c5",
+                            "on-tertiary": "#ffffff",
+                            "tertiary": "#1a619d",
+                            "surface-bright": "#f9f9f9",
+                            "on-primary": "#ffffff",
+                            "on-secondary": "#ffffff",
+                            "on-primary-fixed": "#351000",
+                            "error-container": "#ffdad6",
+                            "surface-container": "#eeeeee",
+                            "tertiary-fixed-dim": "#9ecaff",
+                            "secondary-fixed": "#e5e2e1",
+                            "primary": "#a04100",
+                            "surface-dim": "#dadada",
+                            "on-tertiary-fixed-variant": "#00497c",
+                            "surface-container-highest": "#e2e2e2",
+                            "on-error": "#ffffff",
+                            "outline": "#8c7166",
+                            "on-tertiary-fixed": "#001d36",
+                            "on-secondary-fixed": "#1c1b1b",
+                            "outline-variant": "#e0c0b2",
+                            "surface-container-lowest": "#ffffff",
+                            "inverse-primary": "#ffb693",
+                            "surface-tint": "#a04100",
+                            "inverse-on-surface": "#f1f1f1",
+                            "secondary-container": "#e2dfde",
+                            "inverse-surface": "#2f3131",
+                            "error": "#ba1a1a",
+                            "on-error-container": "#93000a",
+                            "tertiary-container": "#5f9ad9",
+                            "tertiary-fixed": "#d1e4ff",
+                            "on-background": "#1a1c1c",
+                            "primary-container": "#f27024",
+                            "on-surface": "#1a1c1c",
+                            "surface-variant": "#e2e2e2",
+                            "secondary": "#5f5e5e",
+                            "surface-container-high": "#e8e8e8",
+                            "on-tertiary-container": "#003055",
+                            "on-primary-fixed-variant": "#7a3000",
+                            "background": "#f9f9f9",
+                            "on-primary-container": "#541e00",
+                            "on-surface-variant": "#584238",
+                            "on-secondary-container": "#636262",
+                            "primary-fixed": "#ffdbcc",
+                            "on-secondary-fixed-variant": "#474746",
+                            "surface-container-low": "#f3f3f3",
+                            "primary-fixed-dim": "#ffb693"
+                        },
+                        "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                        },
+                        "spacing": {
+                            "xs": "4px",
+                            "xl": "32px",
+                            "2xl": "48px",
+                            "lg": "24px",
+                            "sm": "8px",
+                            "gutter": "16px",
+                            "container-margin": "24px",
+                            "base": "4px",
+                            "md": "16px"
+                        },
+                        "fontFamily": {
+                            "display-lg-mobile": ["Montserrat"],
+                            "headline-md": ["Montserrat"],
+                            "label-md": ["Inter"],
+                            "button": ["Inter"],
+                            "body-lg": ["Inter"],
+                            "body-md": ["Inter"],
+                            "display-lg": ["Montserrat"]
+                        },
+                        "fontSize": {
+                            "display-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                            "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                            "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                            "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                        }
+                    },
+                },
+            }
+        } catch (_e) {}
+    </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex flex-col h-full w-64 fixed left-0 top-0 z-40 bg-primary-container shadow-md" id="SideNavBar">
+<div class="p-lg flex flex-col gap-sm">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 bg-white/20 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="school">school</span>
+</div>
+<div>
+<h1 class="font-display-lg text-headline-md text-white">MyFSchool</h1>
+<p class="text-white/70 text-[10px] uppercase tracking-widest font-bold">Năm học 2025-26</p>
+</div>
+</div>
+<nav class="mt-xl flex flex-col gap-xs">
+<!-- Quản lý nhân sự - Selected -->
+<a class="bg-white/20 text-white px-md py-sm flex items-center gap-md transition-all rounded border-l-4 border-white" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Quản lý nhân sự</span>
+</a>
+<!-- Giáo viên -->
+<a class="text-white px-md py-sm flex items-center gap-md hover:bg-white/10 transition-all rounded active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Giáo viên</span>
+</a>
+<!-- Lịch học -->
+<a class="text-white px-md py-sm flex items-center gap-md hover:bg-white/10 transition-all rounded active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="font-label-md text-label-md">Lịch học</span>
+</a>
+<!-- Đơn từ -->
+<a class="text-white px-md py-sm flex items-center gap-md hover:bg-white/10 transition-all rounded active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Đơn từ</span>
+</a>
+<!-- Câu lạc bộ -->
+<a class="text-white px-md py-sm flex items-center gap-md hover:bg-white/10 transition-all rounded active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-md text-label-md">Câu lạc bộ</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-lg flex flex-col gap-xs">
+<button class="bg-white text-primary font-button text-button py-sm px-md rounded-lg mb-md flex items-center justify-center gap-sm hover:bg-opacity-90 transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                Thông báo mới
+            </button>
+<a class="text-white px-md py-sm flex items-center gap-md hover:bg-white/10 transition-all rounded active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Cài đặt</span>
+</a>
+<a class="text-white px-md py-sm flex items-center gap-md hover:bg-white/10 transition-all rounded active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Đăng xuất</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-64 min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-lg py-sm bg-surface shadow-sm border-b border-outline-variant" id="TopNavBar">
+<div class="flex items-center gap-lg flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-secondary" data-icon="search">search</span>
+<input class="w-full pl-xl pr-md py-xs bg-surface-container rounded-lg border-none focus:ring-2 focus:ring-primary-container transition-all text-body-md" placeholder="Tìm kiếm nhanh..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-xs rounded-full hover:bg-surface-container-high transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+</button>
+<button class="p-xs rounded-full hover:bg-surface-container-high transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-xs"></div>
+<div class="flex items-center gap-sm">
+<div class="text-right hidden sm:block">
+<p class="font-label-md text-label-md text-on-surface">Admin_MFS</p>
+<p class="text-[10px] text-secondary">Quản trị viên</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary-container object-cover" data-alt="A professional headshot of a school administrator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAzx3Zs01HSX0iS35YUbPNQkA8OwvadKEAPlzIZ5pJcsObCUzFh1vscGHgHj2I01aPRwvkjNXJY3cU-eWdJK222KwuzfMozw9tdeP4hdqdckzwBQhHQahgPs-ELb9bY4uw_33OR8m8Hh2jFqGUlHg6uGQCPWTmA3eI1EDr0f2kJ_JKIFc6_fYVSBxC9Y0bLwoAcP9DND9-6A38Wzqt-QbXpKakl5-_kttUqbfg3w5vApW5-jkmZSrZrts35d8nX_PTz-szOg6N6q8">
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<section class="p-lg flex-1">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-lg gap-md">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Danh sách Giáo viên</h2>
+<p class="text-body-md text-secondary">Quản lý thông tin và lịch trình giảng dạy của cán bộ giáo viên.</p>
+</div>
+<button class="bg-primary-container text-white font-button text-button py-sm px-lg rounded shadow-sm hover:brightness-105 active:scale-95 transition-all flex items-center gap-sm w-fit">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+                    Thêm Giáo viên
+                </button>
+</div>
+<!-- Statistics Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg mb-lg">
+<div class="bg-white p-md rounded-lg border border-outline-variant shadow-sm flex items-center gap-md">
+<div class="w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="groups">groups</span>
+</div>
+<div>
+<p class="text-label-md font-label-md text-secondary">Tổng giáo viên</p>
+<p class="text-headline-md font-headline-md">154</p>
+</div>
+</div>
+<div class="bg-white p-md rounded-lg border border-outline-variant shadow-sm flex items-center gap-md">
+<div class="w-12 h-12 bg-tertiary-fixed rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" data-icon="account_tree">account_tree</span>
+</div>
+<div>
+<p class="text-label-md font-label-md text-secondary">Số tổ chuyên môn</p>
+<p class="text-headline-md font-headline-md">08</p>
+</div>
+</div>
+<div class="bg-white p-md rounded-lg border border-outline-variant shadow-sm flex items-center gap-md">
+<div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-green-700" data-icon="verified">verified</span>
+</div>
+<div>
+<p class="text-label-md font-label-md text-secondary">Đang công tác</p>
+<p class="text-headline-md font-headline-md text-green-700">142</p>
+</div>
+</div>
+<div class="bg-white p-md rounded-lg border border-outline-variant shadow-sm flex items-center gap-md">
+<div class="w-12 h-12 bg-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="event_busy">event_busy</span>
+</div>
+<div>
+<p class="text-label-md font-label-md text-secondary">Đang nghỉ phép</p>
+<p class="text-headline-md font-headline-md text-secondary">12</p>
+</div>
+</div>
+</div>
+<!-- Filters Section -->
+<div class="bg-white p-md rounded-lg border border-outline-variant shadow-sm mb-lg">
+<div class="flex flex-wrap items-center gap-md">
+<div class="flex-1 min-w-[200px]">
+<label class="block text-label-md font-label-md text-secondary mb-xs">Tìm theo tên hoặc ID</label>
+<div class="relative">
+<input class="w-full border border-outline-variant rounded-lg p-sm text-body-md focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Ví dụ: GV2023-001" type="text">
+</div>
+</div>
+<div class="w-full md:w-64">
+<label class="block text-label-md font-label-md text-secondary mb-xs">Tổ chuyên môn</label>
+<select class="w-full border border-outline-variant rounded-lg p-sm text-body-md bg-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none">
+<option>Tất cả tổ chuyên môn</option>
+<option>Toán - Tin</option>
+<option>Ngữ Văn</option>
+<option>Ngoại Ngữ</option>
+<option>Khoa học Tự nhiên</option>
+</select>
+</div>
+<div class="self-end pb-1">
+<button class="bg-surface-container-high text-on-surface-variant font-button text-button py-sm px-md rounded hover:bg-surface-container-highest transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+                            Đặt lại
+                        </button>
+</div>
+</div>
+</div>
+<!-- Data Table Section -->
+<div class="bg-white rounded-lg border border-outline-variant shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-white sticky top-0 border-b-2 border-primary-container">
+<th class="p-md font-label-md text-label-md text-secondary uppercase tracking-wider">Mã GV</th>
+<th class="p-md font-label-md text-label-md text-secondary uppercase tracking-wider">Họ và Tên</th>
+<th class="p-md font-label-md text-label-md text-secondary uppercase tracking-wider">Tổ chuyên môn</th>
+<th class="p-md font-label-md text-label-md text-secondary uppercase tracking-wider">Email liên hệ</th>
+<th class="p-md font-label-md text-label-md text-secondary uppercase tracking-wider">Trạng thái</th>
+<th class="p-md font-label-md text-label-md text-secondary uppercase tracking-wider text-right">Hành động</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-md font-label-md text-primary">GV2023-001</td>
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-xs font-bold text-primary">PT</div>
+<div>
+<p class="font-semibold text-on-surface">Phạm Thanh Tùng</p>
+<p class="text-[10px] text-secondary">Thạc sĩ Sư phạm</p>
+</div>
+</div>
+</td>
+<td class="p-md text-body-md text-secondary">Toán - Tin học</td>
+<td class="p-md text-body-md text-secondary">tungpt@myfschool.edu.vn</td>
+<td class="p-md">
+<span class="px-sm py-xs rounded-full bg-green-100 text-green-800 text-[10px] font-bold uppercase">ĐANG CÔNG TÁC</span>
+</td>
+<td class="p-md text-right">
+<div class="flex items-center justify-end gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-xs text-tertiary hover:bg-tertiary-container rounded"><span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span></button>
+<button class="p-xs text-primary hover:bg-primary-fixed rounded"><span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span></button>
+<button class="p-xs text-error hover:bg-error-container rounded"><span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-md font-label-md text-primary">GV2023-045</td>
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center text-xs font-bold text-tertiary">HL</div>
+<div>
+<p class="font-semibold text-on-surface">Nguyễn Hoàng Lan</p>
+<p class="text-[10px] text-secondary">Cử nhân Ngôn ngữ Anh</p>
+</div>
+</div>
+</td>
+<td class="p-md text-body-md text-secondary">Ngoại Ngữ</td>
+<td class="p-md text-body-md text-secondary">lannh@myfschool.edu.vn</td>
+<td class="p-md">
+<span class="px-sm py-xs rounded-full bg-green-100 text-green-800 text-[10px] font-bold uppercase">ĐANG CÔNG TÁC</span>
+</td>
+<td class="p-md text-right">
+<div class="flex items-center justify-end gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-xs text-tertiary hover:bg-tertiary-container rounded"><span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span></button>
+<button class="p-xs text-primary hover:bg-primary-fixed rounded"><span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span></button>
+<button class="p-xs text-error hover:bg-error-container rounded"><span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-md font-label-md text-primary">GV2022-012</td>
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center text-xs font-bold text-secondary">VD</div>
+<div>
+<p class="font-semibold text-on-surface">Lê Văn Duy</p>
+<p class="text-[10px] text-secondary">Tiến sĩ Vật lý</p>
+</div>
+</div>
+</td>
+<td class="p-md text-body-md text-secondary">Khoa học Tự nhiên</td>
+<td class="p-md text-body-md text-secondary">duylv@myfschool.edu.vn</td>
+<td class="p-md">
+<span class="px-sm py-xs rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase">NGHỈ PHÉP</span>
+</td>
+<td class="p-md text-right">
+<div class="flex items-center justify-end gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-xs text-tertiary hover:bg-tertiary-container rounded"><span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span></button>
+<button class="p-xs text-primary hover:bg-primary-fixed rounded"><span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span></button>
+<button class="p-xs text-error hover:bg-error-container rounded"><span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-md font-label-md text-primary">GV2023-088</td>
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-primary-container">MB</div>
+<div>
+<p class="font-semibold text-on-surface">Trần Mai Bảo</p>
+<p class="text-[10px] text-secondary">Thạc sĩ Văn học</p>
+</div>
+</div>
+</td>
+<td class="p-md text-body-md text-secondary">Ngữ Văn</td>
+<td class="p-md text-body-md text-secondary">baotm@myfschool.edu.vn</td>
+<td class="p-md">
+<span class="px-sm py-xs rounded-full bg-green-100 text-green-800 text-[10px] font-bold uppercase">ĐANG CÔNG TÁC</span>
+</td>
+<td class="p-md text-right">
+<div class="flex items-center justify-end gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-xs text-tertiary hover:bg-tertiary-container rounded"><span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span></button>
+<button class="p-xs text-primary hover:bg-primary-fixed rounded"><span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span></button>
+<button class="p-xs text-error hover:bg-error-container rounded"><span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-md border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+<p class="text-label-md text-secondary">Hiển thị <span class="font-bold text-on-surface">1 - 4</span> trên tổng số <span class="font-bold text-on-surface">154</span> giáo viên</p>
+<div class="flex items-center gap-xs">
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-secondary hover:bg-surface-container-high transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded text-white flex items-center justify-center font-bold text-xs bg-primary-container">1</button>
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors font-bold text-xs">2</button>
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors font-bold text-xs">3</button>
+<span class="px-xs text-secondary">...</span>
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors font-bold text-xs">39</button>
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-secondary hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="p-lg bg-surface border-t border-outline-variant mt-auto">
+<div class="flex justify-between items-center opacity-60">
+<p class="text-label-md">© 2024 Hệ thống giáo dục MyFSchool</p>
+<div class="flex gap-md">
+<a class="text-label-md hover:text-primary underline" href="#">Trung tâm hỗ trợ</a>
+<a class="text-label-md hover:text-primary underline" href="#">Chính sách bảo mật</a>
+</div>
+</div>
+</footer>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    row.querySelector('.opacity-0')?.classList.remove('opacity-0');
+                });
+                row.addEventListener('mouseleave', () => {
+                    const actionDiv = row.querySelector('.group-hover\\:opacity-100');
+                    if (actionDiv) actionDiv.classList.add('opacity-0');
+                });
+            });
+        });
+    </script>
+
+
+</body></html>

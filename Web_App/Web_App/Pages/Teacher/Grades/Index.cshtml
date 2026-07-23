@@ -1,0 +1,683 @@
+@page
+@model Web_App.Pages.Teacher.Grades.IndexModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Quản lý Điểm số";
+}
+
+<style>
+    .page-container {
+        padding: 24px;
+    }
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .header-section h1 {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1A1C1C;
+        margin: 0 0 4px 0;
+    }
+    .header-section p {
+        color: #666;
+        font-size: 14px;
+        margin: 0;
+    }
+    .main-card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #E2E2E2;
+        display: flex;
+        flex-direction: column;
+    }
+    .filters-section {
+        padding: 16px;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .search-box {
+        position: relative;
+        margin-bottom: 16px;
+    }
+    .search-box input {
+        width: 100%;
+        padding: 8px 16px 8px 40px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 10px;
+        color: #999;
+    }
+    .filter-row {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+    }
+    .filter-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .filter-item label {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    .filter-item select {
+        padding: 8px 16px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        outline: none;
+        background: #fff;
+    }
+    .reset-btn {
+        background: #EEEEEE;
+        color: #333;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 38px;
+    }
+    .lock-btn {
+        padding: 10px 24px;
+        border-radius: 8px;
+        border: none;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .lock-btn.locked {
+        background: #4CAF50;
+    }
+    .lock-btn.unlocked {
+        background: #F44336;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th {
+        background: #F9F9F9;
+        color: #666;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #EEEEEE;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+    .code-col { color: #A04100; font-weight: 600; }
+    .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #E0E0E0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+        font-size: 12px;
+        color: #333;
+    }
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+    }
+    .rank-xuat-sac { color: purple; font-weight: bold; }
+    .rank-gioi { color: #2196F3; font-weight: bold; }
+    .rank-normal { color: #333; font-weight: bold; }
+
+    /* Edit Screen Styles */
+    .edit-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .edit-header h1 { font-size: 20px; margin: 0; color: #1A1C1C; }
+    .edit-header p { margin: 4px 0 0 0; color: #666; font-size: 14px; }
+    .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #666; padding: 8px; }
+    .back-btn:hover { color: #333; }
+    
+    .accordion-item {
+        background: #fff;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+    .accordion-header {
+        padding: 16px 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #F9F9FA;
+        font-weight: 600;
+        font-size: 15px;
+        color: #333;
+    }
+    .accordion-header:hover { background: #f0f0f0; }
+    .accordion-content {
+        padding: 20px;
+        background: #fff;
+        display: none;
+        border-top: 1px solid #E2E2E2;
+        gap: 16px;
+    }
+    .accordion-content.active {
+        display: flex;
+    }
+    
+    .excel-btn {
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #fff;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+    .export-btn { background: #2196F3; }
+    .import-btn { background: #4CAF50; }
+</style>
+
+<div class="page-container">
+    <!-- Main List View -->
+    <div id="mainContainer">
+        <div class="header-section">
+            <div>
+                <h1>Điểm số lớp giảng dạy</h1>
+                <p>Xem điểm và nhập điểm cho các môn học được phân công.</p>
+            </div>
+        </div>
+
+        <div class="main-card">
+            <div class="filters-section">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, ID..." oninput="applyFilters()">
+                </div>
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>Năm học</label>
+                        <select id="filterYear" onchange="applyFilters()">
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Khóa</label>
+                        <select id="filterCohort" onchange="applyFilters()">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Lớp</label>
+                        <select id="filterClass" onchange="applyFilters()">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Môn học</label>
+                        <select id="filterSubject" onchange="applyFilters()">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+
+                    <button class="reset-btn" onclick="resetFilters()">
+                        <i class="fas fa-filter-slash"></i> Đặt lại
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">LỚP</th>
+                            <th style="width: 20%;">KHÓA</th>
+                            <th style="width: 40%;">MÔN HỌC</th>
+                            <th style="width: 20%; text-align: center;">HÀNH ĐỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <tr><td colspan="4" style="text-align: center;">Vui lòng chọn năm học.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit/Excel Screen View (Hidden by default) -->
+    <div id="editContainer" style="display:none;">
+        <div class="edit-header">
+            <button class="back-btn" onclick="closeEditScreen()"><i class="fas fa-arrow-left"></i></button>
+            <div>
+                <h1 id="editTitle">Nhập điểm - Môn: ... - Lớp: ...</h1>
+                <p>Cập nhật điểm số cho tất cả học sinh trong lớp.</p>
+            </div>
+            <button class="excel-btn export-btn" onclick="exportExcel()" style="margin-left:auto; border:none; border-radius:6px; padding:10px 15px;"><i class="fas fa-file-export"></i> Xuất Excel</button>
+            <button class="excel-btn import-btn" id="btnImportExcel" onclick="triggerImport()" style="border:none; border-radius:6px; padding:10px 15px;"><i class="fas fa-file-import"></i> Nhập Excel</button>
+            
+            <button class="lock-btn" style="background:#F27024; margin-left:12px;" onclick="saveGrades()">
+                <i class="fas fa-save"></i> Lưu thay đổi
+            </button>
+        </div>
+
+        <div style="padding: 20px;">
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <label style="font-weight: 500;">Chọn học kỳ:</label>
+                <select id="semesterSelect" onchange="renderEditTable()" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                    <option value="1">Học kỳ 1</option>
+                    <option value="2">Học kỳ 2</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #F9F9F9;">
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 10%;">Mã học sinh</th>
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 20%;">Tên học sinh</th>
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 8%;">Điểm CC</th>
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 8%;">Miệng 1</th>
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 8%;">Miệng 2</th>
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 8%;">15 Phút 1</th>
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 8%;">15 Phút 2</th>
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 8%;">Giữa kỳ</th>
+                            <th style="border: 1px solid #E2E2E2; padding: 8px; width: 8%;">Cuối kỳ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <input type="file" id="fileInput" style="display:none;" accept=".xlsx, .xls" onchange="onFileSelected(event)">
+    </div>
+</div>
+
+<script>
+    let teachingAssignments = []; // { classId, className, cohort, subjectId, subjectName, isLocked }
+    let academicYears = [];
+    
+    let currentEditingClassId = null;
+    let currentEditingSubjectId = null;
+    let currentEditingSubjectName = null;
+    let currentEditingClassName = null;
+    let currentClassYear = "2025-2026";
+    let isCurrentClassLocked = false;
+    let currentStudents = [];
+    let currentGrades = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadInitialData();
+    });
+
+    async function loadInitialData() {
+        try {
+            const yearsRes = await fetch('/api/web/grades/academic-years');
+            academicYears = await yearsRes.json();
+            
+            const yearSel = document.getElementById('filterYear');
+            yearSel.innerHTML = '';
+            academicYears.forEach(y => {
+                yearSel.innerHTML += `<option value="${y}">${y}</option>`;
+            });
+            if (academicYears.length > 0) {
+                currentClassYear = academicYears[0];
+            }
+            
+            await fetchAssignmentsForYear(currentClassYear);
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    async function fetchAssignmentsForYear(year) {
+        try {
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">Đang tải dữ liệu...</td></tr>`;
+
+            const classesRes = await fetch(`/api/web/class/my-classes?academicYear=${year}`);
+            const classes = await classesRes.json();
+            
+            teachingAssignments = [];
+            
+            await Promise.all(classes.map(async (c) => {
+                try {
+                    const subjectsRes = await fetch(`/api/web/grades/class/${c.id}/my-subjects`);
+                    if (subjectsRes.ok) {
+                        const subjects = await subjectsRes.json();
+                        subjects.forEach(sub => {
+                            let pureClassName = c.name;
+                            if (c.cohort && pureClassName.endsWith(' - ' + c.cohort)) {
+                                pureClassName = pureClassName.substring(0, pureClassName.length - (' - ' + c.cohort).length);
+                            }
+                            
+                            teachingAssignments.push({
+                                classId: c.id,
+                                className: pureClassName,
+                                cohort: c.cohort,
+                                subjectId: sub.id,
+                                subjectName: sub.name,
+                                isLocked: c.isGradeLocked
+                            });
+                        });
+                    }
+                } catch(err) {}
+            }));
+
+            // Populate Dropdowns
+            let cohorts = [...new Set(teachingAssignments.map(a => a.cohort).filter(c => c))].sort();
+            let classesList = [...new Set(teachingAssignments.map(a => a.className).filter(c => c))].sort();
+            let subjectsList = [...new Set(teachingAssignments.map(a => a.subjectName).filter(c => c))].sort();
+
+            const cohortSel = document.getElementById('filterCohort');
+            cohortSel.innerHTML = '<option value="">Tất cả</option>';
+            cohorts.forEach(c => cohortSel.innerHTML += `<option value="${c}">${c}</option>`);
+
+            const classSel = document.getElementById('filterClass');
+            classSel.innerHTML = '<option value="">Tất cả</option>';
+            classesList.forEach(c => classSel.innerHTML += `<option value="${c}">${c}</option>`);
+
+            const subjectSel = document.getElementById('filterSubject');
+            subjectSel.innerHTML = '<option value="">Tất cả</option>';
+            subjectsList.forEach(c => subjectSel.innerHTML += `<option value="${c}">${c}</option>`);
+
+            renderMainTable();
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    async function applyFilters() {
+        const year = document.getElementById('filterYear').value;
+        if (year !== currentClassYear) {
+            currentClassYear = year;
+            await fetchAssignmentsForYear(currentClassYear);
+        } else {
+            renderMainTable();
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('filterCohort').value = '';
+        document.getElementById('filterClass').value = '';
+        document.getElementById('filterSubject').value = '';
+        renderMainTable();
+    }
+
+    function renderMainTable() {
+        const tbody = document.getElementById('studentTableBody');
+        tbody.innerHTML = '';
+        
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const fCohort = document.getElementById('filterCohort').value;
+        const fClass = document.getElementById('filterClass').value;
+        const fSubject = document.getElementById('filterSubject').value;
+        
+        const filteredAssignments = teachingAssignments.filter(a => {
+            const searchStr = `${a.className} ${a.cohort || ''} ${a.subjectName}`.toLowerCase();
+            if (query && !searchStr.includes(query)) return false;
+            if (fCohort && a.cohort !== fCohort) return false;
+            if (fClass && a.className !== fClass) return false;
+            if (fSubject && a.subjectName !== fSubject) return false;
+            return true;
+        });
+        
+        if (filteredAssignments.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">Không có dữ liệu giảng dạy</td></tr>`;
+            return;
+        }
+
+        filteredAssignments.forEach(a => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><div style="font-weight: 500; color: #333;">${a.className}</div></td>
+                <td>${a.cohort || '-'}</td>
+                <td><div style="color: #666;"><i class="fas fa-book" style="margin-right: 5px; color: #2196F3;"></i>${a.subjectName}</div></td>
+                <td style="text-align:center;">
+                    <button class="action-btn" onclick="openEditScreen(${a.classId}, '${a.className}', ${a.subjectId}, '${a.subjectName}', ${a.isLocked})" title="Nhập điểm">
+                        <i class="fas fa-edit" style="color: #2196F3; font-size: 18px;"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function openEditScreen(classId, className, subjectId, subjectName, isLocked) {
+        if (!classId) return;
+        currentEditingClassId = classId;
+        currentEditingClassName = className;
+        currentEditingSubjectId = subjectId;
+        currentEditingSubjectName = subjectName;
+        isCurrentClassLocked = isLocked;
+        
+        document.getElementById('editTitle').innerText = `Nhập điểm - Môn: ${subjectName} - Lớp: ${className}`;
+        if (isCurrentClassLocked) {
+            document.getElementById('editTitle').innerText += ' (SỔ ĐIỂM ĐÃ BỊ KHÓA)';
+            document.querySelector('.lock-btn').style.display = 'none'; // hide save button
+            document.getElementById('btnImportExcel').style.display = 'none';
+        } else {
+            document.querySelector('.lock-btn').style.display = 'flex';
+            document.getElementById('btnImportExcel').style.display = 'flex';
+        }
+        
+        document.getElementById('mainContainer').style.display = 'none';
+        document.getElementById('editContainer').style.display = 'block';
+
+        const tbody = document.getElementById('editTableBody');
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px;">Đang tải danh sách học sinh...</td></tr>';
+
+        try {
+            const [usersRes, gradesRes] = await Promise.all([
+                fetch('/api/web/user/users'),
+                fetch(`/api/web/grades/class/${classId}`)
+            ]);
+            
+            const users = await usersRes.json();
+            const grades = await gradesRes.json();
+            
+            currentStudents = users.filter(u => u.classId == classId && u.roles && u.roles.includes('Student')).map(u => {
+                return {
+                    id: u.id,
+                    name: u.fullName || u.name,
+                    code: u.code
+                };
+            });
+            
+            currentGrades = grades.filter(g => g.academicYear === currentClassYear && g.subjectId === subjectId);
+            
+            renderEditTable();
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color:red;">Lỗi tải dữ liệu</td></tr>';
+        }
+    }
+
+    function renderEditTable() {
+        const tbody = document.getElementById('editTableBody');
+        tbody.innerHTML = '';
+        
+        const semester = parseInt(document.getElementById('semesterSelect').value);
+        
+        if (currentStudents.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center;">Lớp không có học sinh nào.</td></tr>`;
+            return;
+        }
+
+        currentStudents.forEach(s => {
+            let g = currentGrades.find(gr => gr.studentId === s.id && gr.semester === semester) || {};
+            
+            let tr = document.createElement('tr');
+            tr.setAttribute('data-student', s.id);
+            tr.innerHTML = `
+                <td style="border: 1px solid #E2E2E2; padding: 8px;">${s.code || s.id}</td>
+                <td style="border: 1px solid #E2E2E2; padding: 8px; font-weight: 500;">${s.name}</td>
+                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input ${isCurrentClassLocked?'disabled':''} class="grade-input" style="width:100%; border:1px solid #ddd; padding:4px; border-radius:4px; text-align:center;" type="number" step="0.1" name="attendanceScore" value="${g.attendanceScore ?? ''}"></td>
+                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input ${isCurrentClassLocked?'disabled':''} class="grade-input" style="width:100%; border:1px solid #ddd; padding:4px; border-radius:4px; text-align:center;" type="number" step="0.1" name="oralScore1" value="${g.oralScore1 ?? ''}"></td>
+                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input ${isCurrentClassLocked?'disabled':''} class="grade-input" style="width:100%; border:1px solid #ddd; padding:4px; border-radius:4px; text-align:center;" type="number" step="0.1" name="oralScore2" value="${g.oralScore2 ?? ''}"></td>
+                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input ${isCurrentClassLocked?'disabled':''} class="grade-input" style="width:100%; border:1px solid #ddd; padding:4px; border-radius:4px; text-align:center;" type="number" step="0.1" name="fifteenMinScore1" value="${g.fifteenMinScore1 ?? ''}"></td>
+                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input ${isCurrentClassLocked?'disabled':''} class="grade-input" style="width:100%; border:1px solid #ddd; padding:4px; border-radius:4px; text-align:center;" type="number" step="0.1" name="fifteenMinScore2" value="${g.fifteenMinScore2 ?? ''}"></td>
+                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input ${isCurrentClassLocked?'disabled':''} class="grade-input" style="width:100%; border:1px solid #ddd; padding:4px; border-radius:4px; text-align:center;" type="number" step="0.1" name="midtermScore" value="${g.midtermScore ?? ''}"></td>
+                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input ${isCurrentClassLocked?'disabled':''} class="grade-input" style="width:100%; border:1px solid #ddd; padding:4px; border-radius:4px; text-align:center;" type="number" step="0.1" name="finalScore" value="${g.finalScore ?? ''}"></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function closeEditScreen() {
+        document.getElementById('mainContainer').style.display = 'block';
+        document.getElementById('editContainer').style.display = 'none';
+        currentEditingClassId = null;
+        currentEditingSubjectId = null;
+    }
+
+    async function saveGrades() {
+        if (isCurrentClassLocked) {
+            alert('Sổ điểm đã bị khóa, không thể lưu.');
+            return;
+        }
+        
+        const semester = parseInt(document.getElementById('semesterSelect').value);
+        const rows = document.querySelectorAll('#editTableBody tr');
+        let payload = [];
+
+        rows.forEach(row => {
+            const studentId = parseInt(row.getAttribute('data-student'));
+            if (!studentId) return;
+            
+            const getVal = (name) => {
+                let val = row.querySelector(`input[name="${name}"]`).value;
+                return val === '' ? null : parseFloat(val);
+            };
+
+            let gradeData = {
+                studentId: studentId,
+                subjectId: currentEditingSubjectId,
+                classId: currentEditingClassId,
+                academicYear: currentClassYear,
+                semester: semester,
+                attendanceScore: getVal('attendanceScore'),
+                oralScore1: getVal('oralScore1'),
+                oralScore2: getVal('oralScore2'),
+                fifteenMinScore1: getVal('fifteenMinScore1'),
+                fifteenMinScore2: getVal('fifteenMinScore2'),
+                midtermScore: getVal('midtermScore'),
+                finalScore: getVal('finalScore')
+            };
+
+            if (Object.values(gradeData).some(v => v !== null && v !== studentId && v !== currentEditingSubjectId && v !== currentEditingClassId && v !== currentClassYear && v !== semester)) {
+                payload.push(gradeData);
+            }
+        });
+
+        if (payload.length === 0) {
+            alert("Không có điểm nào để lưu.");
+            return;
+        }
+
+        const btn = document.querySelector('.lock-btn');
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+        btn.disabled = true;
+
+        try {
+            for (let data of payload) {
+                await fetch('/api/web/grades', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+            alert("Lưu điểm thành công!");
+            const gradesRes = await fetch(`/api/web/grades/class/${currentEditingClassId}`);
+            const grades = await gradesRes.json();
+            currentGrades = grades.filter(g => g.academicYear === currentClassYear && g.subjectId === currentEditingSubjectId);
+            renderEditTable();
+        } catch(e) {
+            alert("Lỗi khi lưu điểm!");
+            console.error(e);
+        } finally {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    }
+
+    // EXCEL IMPORT/EXPORT for teacher
+    function exportExcel() {
+        window.open(`/api/web/grades/export/${currentEditingClassId}?subjectId=${currentEditingSubjectId}&academicYear=${currentClassYear}`, '_blank');
+    }
+
+    function triggerImport() {
+        if (isCurrentClassLocked) {
+            alert('Sổ điểm đã bị khóa.');
+            return;
+        }
+        document.getElementById('fileInput').click();
+    }
+
+    async function onFileSelected(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const btn = document.querySelector('.lock-btn');
+        btn.innerText = "Đang nhập...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`/api/web/grades/import/${currentEditingClassId}?subjectId=${currentEditingSubjectId}&academicYear=${currentClassYear}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (res.ok) {
+                alert("Nhập điểm từ Excel thành công!");
+                const gradesRes = await fetch(`/api/web/grades/class/${currentEditingClassId}`);
+                const grades = await gradesRes.json();
+                currentGrades = grades.filter(g => g.academicYear === currentClassYear && g.subjectId === currentEditingSubjectId);
+                renderEditTable();
+            } else {
+                alert("Lỗi nhập dữ liệu: " + await res.text());
+            }
+        } catch (e) {
+            alert("Lỗi kết nối");
+        }
+
+        btn.innerHTML = `<i class="fas fa-save"></i> Lưu thay đổi`;
+        btn.disabled = false;
+        event.target.value = ''; // reset
+    }
+</script>

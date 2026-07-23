@@ -1,0 +1,1192 @@
+@page
+@model Web_App.Pages.Admin.SchedulesModel
+@{
+}
+
+<style>
+    /* Selection View */
+    #classSelectionView {
+        display: flex;
+        justify-content: center;
+        padding-top: 50px;
+    }
+    .selection-card {
+        width: 500px;
+        padding: 32px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .selection-card h2 {
+        color: #A04100;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .selection-card p {
+        color: #666;
+        margin-bottom: 32px;
+    }
+    .form-group {
+        margin-bottom: 16px;
+        text-align: left;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    .btn-primary {
+        background: #F27024;
+        color: #fff;
+        border: none;
+        padding: 16px;
+        width: 100%;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 16px;
+    }
+    .btn-primary:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* Dashboard View */
+    #scheduleDashboardView {
+        display: none;
+        padding: 24px;
+    }
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .header-title h1 {
+        color: #A04100;
+        font-size: 24px;
+        margin: 0 0 4px 0;
+    }
+    .header-title p {
+        color: #666;
+        margin: 0;
+        font-size: 14px;
+    }
+    .header-actions {
+        display: flex;
+        gap: 16px;
+    }
+    .btn-outline {
+        background: transparent;
+        border: 1px solid #ccc;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+    }
+    .btn-outline.danger {
+        color: #d32f2f;
+        border-color: #d32f2f;
+    }
+    .btn-solid {
+        background: #F27024;
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        flex: 1;
+        background: #fff;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    .stat-info h4 {
+        margin: 0;
+        font-size: 10px;
+        color: #666;
+        text-transform: uppercase;
+    }
+    .stat-info div {
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    /* Calendar Grid */
+    .calendar-container {
+        background: #fff;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+    }
+    .calendar-controls {
+        padding: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .calendar-controls button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .grid-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .grid-table th, .grid-table td {
+        border-right: 1px solid #E2E2E2;
+        border-bottom: 1px solid #E2E2E2;
+        text-align: center;
+    }
+    .grid-table th {
+        height: 50px;
+        color: #666;
+        font-weight: 600;
+    }
+    .grid-table td {
+        height: 80px;
+        vertical-align: middle;
+        padding: 4px;
+    }
+    .slot-label {
+        font-weight: 600;
+        font-size: 12px;
+    }
+    .session-indicator {
+        width: 50px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        background: #FFF3E0;
+    }
+    .session-indicator.afternoon {
+        background: #E3F2FD;
+    }
+
+    .schedule-item {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px;
+        font-size: 11px;
+        text-align: left;
+        cursor: pointer;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+    .schedule-item:hover {
+        border-color: #F27024;
+    }
+    .schedule-item strong {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .schedule-item div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Requests Section */
+    .requests-section {
+        margin-top: 24px;
+    }
+    .requests-title {
+        color: #A04100;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 16px;
+    }
+    .requests-list {
+        background: #fff;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+    }
+    .request-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .request-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Dialog */
+    dialog {
+        border: none;
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        max-width: 500px;
+        width: 100%;
+    }
+    dialog::backdrop {
+        background: rgba(0,0,0,0.5);
+    }
+    .dialog-header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #E2E2E2;
+        font-weight: bold;
+        font-size: 18px;
+    }
+    .dialog-content {
+        padding: 24px;
+    }
+    .dialog-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #E2E2E2;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+</style>
+
+<!-- Selection View -->
+<div id="classSelectionView">
+    <div class="selection-card">
+        <div style="color: #F27024; font-size: 64px; margin-bottom: 16px;">&#128197;</div>
+        <h2>Quản lý Lịch học</h2>
+        <p>Vui lòng chọn Lớp để xem và điều phối lịch</p>
+
+        <div class="form-group">
+            <label>Chọn Khóa</label>
+            <select id="selectCohort" onchange="onCohortChange()">
+                <option value="">-- Chọn Khóa --</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Chọn Khối</label>
+            <select id="selectGrade" onchange="onGradeChange()">
+                <option value="">-- Chọn Khối --</option>
+                <option value="10">Khối 10</option>
+                <option value="11">Khối 11</option>
+                <option value="12">Khối 12</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Chọn Lớp</label>
+            <select id="selectClassId" onchange="onClassChange()">
+                <option value="">-- Chọn Lớp --</option>
+            </select>
+        </div>
+
+        <button class="btn-primary" id="btnViewSchedule" disabled onclick="viewSchedule()">XEM LỊCH HỌC</button>
+    </div>
+</div>
+
+<!-- Dashboard View -->
+<div id="scheduleDashboardView">
+    <div class="dashboard-header">
+        <div class="header-title">
+            <h1 id="dashboardTitle">Lịch học Lớp</h1>
+            <p>Quản lý và điều phối thời khóa biểu</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-outline" onclick="backToSelection()">&#8592; Đổi lớp khác</button>
+            <button class="btn-outline danger" onclick="deleteAllSchedules()">&#128465; Xóa tất cả</button>
+            <button class="btn-solid" onclick="openBulkScheduleDialog()">&#10133; Thêm lịch học</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#FFFFDBCC; color:#A04100;">&#128214;</div>
+            <div class="stat-info">
+                <h4>Tổng tiết học tuần này</h4>
+                <div id="statTotalSessions">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#D1E4FF; color:#1A619D;">&#128101;</div>
+            <div class="stat-info">
+                <h4>Giảng viên tham gia</h4>
+                <div id="statTotalTeachers">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        <div class="calendar-controls">
+            <button onclick="changeWeek(-1)">&#10094;</button>
+            <span id="weekLabel" style="font-size: 18px; font-weight: 600; margin: 0 16px; cursor: pointer;"></span>
+            <input type="date" id="datePicker" style="display:none;" onchange="onDatePicked(this.value)">
+            <button onclick="changeWeek(1)">&#10095;</button>
+        </div>
+        <div style="overflow-x: auto; width: 100%;">
+            <table class="grid-table" style="min-width: 1000px;">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;"></th>
+                        <th style="width: 100px;">Thời gian</th>
+                        <th id="th-Mon">Thứ 2</th>
+                        <th id="th-Tue">Thứ 3</th>
+                        <th id="th-Wed">Thứ 4</th>
+                        <th id="th-Thu">Thứ 5</th>
+                        <th id="th-Fri">Thứ 6</th>
+                        <th id="th-Sat">Thứ 7</th>
+                        <th id="th-Sun">CN</th>
+                    </tr>
+                </thead>
+                <tbody id="calendarBody">
+                    <!-- Rendered by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="requests-section">
+        <div class="requests-title">Yêu cầu báo nghỉ / đổi tiết</div>
+        <div class="requests-list" id="requestsList">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+</div>
+
+<!-- Options Dialog -->
+<dialog id="optionsDialog">
+    <div class="dialog-header">Tùy chọn lịch học</div>
+    <div class="dialog-content" id="optionsContent">
+        <!-- JS filled -->
+    </div>
+    <div class="dialog-footer">
+        <button class="btn-outline" onclick="document.getElementById('optionsDialog').close()">Đóng</button>
+        <button class="btn-outline" onclick="openEditScheduleDialog()">&#9998; Sửa</button>
+        <button class="btn-outline danger" onclick="deleteSchedule()">&#128465; Xóa tiết này</button>
+    </div>
+</dialog>
+
+<!-- Edit Dialog -->
+<dialog id="editDialog">
+    <div class="dialog-header">Chỉnh sửa tiết học</div>
+    <div class="dialog-content">
+        <div id="editSubjectName" style="font-weight:bold; margin-bottom:16px;"></div>
+        <input type="hidden" id="editScheduleId">
+        <div class="form-group">
+            <label>Giảng viên</label>
+            <select id="editTeacherId"></select>
+        </div>
+        <div class="form-group">
+            <label>Phòng học</label>
+            <select id="editRoomId"></select>
+        </div>
+    </div>
+    <div class="dialog-footer">
+        <button class="btn-outline" onclick="document.getElementById('editDialog').close()">Hủy</button>
+        <button class="btn-solid" onclick="saveEditSchedule()">Lưu thay đổi</button>
+    </div>
+</dialog>
+
+<!-- Bulk Schedule Dialog -->
+<dialog id="bulkDialog" style="max-width: 800px; padding: 0; border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+    <div style="background: #F27024; color: white; padding: 16px 24px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+        <span>Tạo lịch học hàng loạt</span>
+        <button onclick="document.getElementById('bulkDialog').close()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+    </div>
+    <div class="dialog-content" style="max-height: 70vh; overflow-y: auto; padding: 24px;">
+        <div style="background: #E3F2FD; color: #1A619D; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; border: 1px solid #90CAF9;">
+            <span style="font-size: 18px;">📘</span> Đang thêm lịch cho Lớp: <strong id="bulkClassName"></strong>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+            <select id="bulkSubjectGroup" onchange="onBulkSubjectGroupChange()" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">Chọn Tổ hợp</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 16px;">
+            <select id="bulkSubjectCode" onchange="onBulkSubjectChange()" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;" disabled>
+                <option value="">Chọn Môn học</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+            <select id="bulkTeacherId" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px;" disabled>
+                <option value="">Chọn Giảng viên</option>
+            </select>
+        </div>
+        
+        <div style="display:flex; gap:16px; margin-bottom:24px;">
+            <div class="form-group" style="flex:1;">
+                <input type="number" id="bulkTotalSessions" placeholder="Tổng số buổi học" style="width:100%; padding:12px; border:1px solid #ccc; border-radius:4px;">
+            </div>
+            <div class="form-group" style="flex:1; position: relative;">
+                <label style="position: absolute; top: -10px; left: 10px; background: white; padding: 0 4px; font-size: 12px; color: #666;">Ngày bắt đầu</label>
+                <input type="date" id="bulkStartDate" style="width:100%; padding:12px; border:1px solid #ccc; border-radius:4px;">
+            </div>
+        </div>
+
+        <div style="color: #A04100; font-weight:bold; margin-bottom:12px; font-size: 16px;">Cấu hình Lịch học (Lặp lại hàng tuần)</div>
+        <button class="btn-outline" style="border-radius: 20px; color: #666; border-color: #ccc; margin-bottom: 16px;" onclick="addBulkDaySlot()">+ Thêm ca học cố định</button>
+        
+        <div id="bulkDaysContainer" style="display:flex; flex-wrap:wrap; gap:16px;">
+            <!-- JS populated: Checkboxes for Mon-Sun -> Slots -> Room -->
+            <table class="grid-table" style="width:100%; text-align:left;">
+                <thead>
+                    <tr>
+                        <th style="padding:8px;">Thứ</th>
+                        <th style="padding:8px;">Tiết</th>
+                        <th style="padding:8px;">Phòng</th>
+                        <th style="padding:8px;">Xóa</th>
+                    </tr>
+                </thead>
+                <tbody id="bulkDaySlotsBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="padding: 16px 24px; border-top: 1px solid #E2E2E2; display: flex; justify-content: flex-end; gap: 12px; background: #fff;">
+        <button class="btn-outline" style="border-radius: 20px; color: #666; border-color: #ccc; padding: 10px 24px;" onclick="document.getElementById('bulkDialog').close()">Hủy</button>
+        <button class="btn-solid" style="border-radius: 20px; padding: 10px 24px; background: #F27024; color: white; font-weight: bold;" onclick="saveBulkSchedule()">TẠO LỊCH</button>
+    </div>
+</dialog>
+
+<!-- Substitute Teacher Modal -->
+<dialog id="substituteModal">
+    <div class="dialog-header">Chọn Giáo viên dạy thay</div>
+    <div class="dialog-content">
+        <p style="margin-top: 0;">Vui lòng chọn giáo viên để dạy thay cho lịch học này.</p>
+        <div class="form-group">
+            <select id="substituteSelect" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+                <!-- Options injected by JS -->
+            </select>
+        </div>
+    </div>
+    <div class="dialog-footer">
+        <button class="btn-outline" onclick="closeSubstituteModal()">Hủy</button>
+        <button class="btn-solid" onclick="confirmSubstitute()">Xác nhận</button>
+    </div>
+</dialog>
+
+<script>
+    // --- Data Variables ---
+    let allClasses = [];
+    let cohorts = [];
+    let selectedClass = null;
+    let selectedCohort = null;
+    let selectedGrade = null;
+    
+    let currentDate = new Date();
+    let startOfWeek = new Date();
+    let endOfWeek = new Date();
+    let weekDates = [];
+    
+    let schedules = [];
+    let requests = [];
+    let rooms = [];
+    let subjects = [];
+    let teachers = [];
+
+    const timeSlots = [
+        "07:30 - 08:15", "08:25 - 09:10", "09:20 - 10:05", "10:15 - 11:00",
+        "12:50 - 13:35", "13:45 - 14:30", "14:40 - 15:25", "15:35 - 16:20"
+    ];
+
+    // --- Initialization ---
+    document.addEventListener("DOMContentLoaded", async () => {
+        calculateWeekDates();
+        await Promise.all([
+            fetchClasses(),
+            fetchRooms(),
+            fetchRequests(),
+            fetchSubjects(),
+            fetchTeachers()
+        ]);
+        document.getElementById('weekLabel').addEventListener('click', () => {
+            const dp = document.getElementById('datePicker');
+            dp.showPicker ? dp.showPicker() : dp.click();
+        });
+        
+        checkAutoOpen();
+    });
+
+    async function checkAutoOpen() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const openReqId = urlParams.get('openRequestId');
+            if (!openReqId) return;
+            
+            const res = await fetch(`/api/web/request/user/${currentUserId}`);
+            if (!res.ok) {
+                alert("Lỗi: Không tìm thấy đơn trên hệ thống.");
+                return;
+            }
+            const allReqs = await res.json();
+            const req = allReqs.find(r => r.id.toString() === openReqId.toString());
+            
+            if (!req) {
+                alert("Lỗi: Không tìm thấy đơn trong danh sách.");
+                return;
+            }
+
+            let reqData = null;
+            try { reqData = JSON.parse(req.content); } catch(e) {}
+            
+            if (!reqData || !reqData.ClassId) {
+                alert("Lỗi: Đơn không chứa thông tin lớp học.");
+                return;
+            }
+
+            const classObj = allClasses.find(c => (c.id || c.classId).toString() === reqData.ClassId.toString());
+            if (!classObj) {
+                alert("Lỗi: Không tìm thấy lớp học của đơn này trên hệ thống.");
+                return;
+            }
+
+            selectedClass = classObj;
+            
+            if (classObj.cohort) document.getElementById('selectCohort').value = classObj.cohort;
+            if (classObj.grade) document.getElementById('selectGrade').value = classObj.grade;
+            
+            const selClass = document.getElementById('selectClassId');
+            selClass.innerHTML = `<option value="${classObj.id || classObj.classId}">${classObj.name || classObj.className}</option>`;
+            selClass.value = classObj.id || classObj.classId;
+            
+            document.getElementById('btnViewSchedule').disabled = false;
+            viewSchedule();
+            
+            setTimeout(() => {
+                const reqList = document.getElementById('requestsList');
+                if (reqList) reqList.scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+            
+        } catch (e) {
+            console.error("Auto open failed", e);
+        }
+    }
+
+    // --- API Calls ---
+    async function fetchClasses() {
+        const res = await fetch('/api/web/user/classes');
+        const data = await res.json();
+        allClasses = data;
+        
+        cohorts = [...new Set(allClasses.map(c => c.cohort).filter(c => c))].sort();
+        const selCohort = document.getElementById('selectCohort');
+        cohorts.forEach(c => {
+            selCohort.innerHTML += `<option value="${c}">Khóa ${c}</option>`;
+        });
+    }
+
+    async function fetchRooms() {
+        const res = await fetch('/api/web/schedule/rooms');
+        rooms = await res.json();
+    }
+
+    async function fetchSubjects() {
+        const res = await fetch('/api/web/schedule/subjects');
+        subjects = await res.json();
+    }
+
+    async function fetchTeachers() {
+        const res = await fetch('/api/web/schedule/teachers');
+        teachers = await res.json();
+    }
+
+    async function fetchRequests() {
+        try {
+            const res = await fetch(`/api/web/request/user/${currentUserId}`);
+            const allReqs = await res.json();
+            // Lấy các đơn xin nghỉ / dạy bù
+            requests = allReqs.filter(r => r.category === 'Lịch học' && r.status === 'Chờ duyệt');
+            renderRequests();
+        } catch(e) {
+            console.error("Failed to fetch requests", e);
+        }
+    }
+
+    async function fetchSchedules() {
+        if (!selectedClass) return;
+        
+        // Format ISO string properly
+        const startIso = startOfWeek.toISOString();
+        const endIso = endOfWeek.toISOString();
+        
+        try {
+            const res = await fetch(`/api/web/schedule?startDate=${encodeURIComponent(startIso)}&endDate=${encodeURIComponent(endIso)}&classId=${selectedClass.id || selectedClass.classId}`);
+            if (!res.ok) {
+                console.error("Failed to fetch schedules");
+                schedules = [];
+            } else {
+                schedules = await res.json();
+            }
+        } catch (e) {
+            console.error("Error fetching schedules:", e);
+            schedules = [];
+        }
+        renderDashboard();
+    }
+
+    // --- Selection Logic ---
+    function onCohortChange() {
+        selectedCohort = document.getElementById('selectCohort').value;
+        filterClassesDropdown();
+    }
+
+    function onGradeChange() {
+        selectedGrade = document.getElementById('selectGrade').value;
+        filterClassesDropdown();
+    }
+
+    function filterClassesDropdown() {
+        const selClass = document.getElementById('selectClassId');
+        selClass.innerHTML = '<option value="">-- Chọn Lớp --</option>';
+        selectedClass = null;
+        document.getElementById('btnViewSchedule').disabled = true;
+
+        if (selectedCohort && selectedGrade) {
+            const filtered = allClasses.filter(c => c.cohort === selectedCohort && c.grade.toString() === selectedGrade);
+            filtered.forEach(c => {
+                selClass.innerHTML += `<option value="${c.id || c.classId}">${c.name || c.className}</option>`;
+            });
+        }
+    }
+
+    function onClassChange() {
+        const classId = document.getElementById('selectClassId').value;
+        if (classId) {
+            selectedClass = allClasses.find(c => (c.id || c.classId).toString() === classId);
+            document.getElementById('btnViewSchedule').disabled = false;
+        } else {
+            selectedClass = null;
+            document.getElementById('btnViewSchedule').disabled = true;
+        }
+    }
+
+    function viewSchedule() {
+        document.getElementById('classSelectionView').style.display = 'none';
+        document.getElementById('scheduleDashboardView').style.display = 'block';
+        document.getElementById('dashboardTitle').innerText = `Lịch học Lớp ${selectedClass.name || selectedClass.className}`;
+        fetchSchedules();
+    }
+
+    function backToSelection() {
+        document.getElementById('classSelectionView').style.display = 'flex';
+        document.getElementById('scheduleDashboardView').style.display = 'none';
+    }
+
+    // --- Date Logic ---
+    function calculateWeekDates() {
+        const day = currentDate.getDay();
+        const diff = currentDate.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        startOfWeek = new Date(currentDate.setDate(diff));
+        startOfWeek.setHours(0,0,0,0);
+        
+        endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23,59,59,999);
+
+        weekDates = [];
+        for(let i=0; i<7; i++) {
+            let d = new Date(startOfWeek);
+            d.setDate(startOfWeek.getDate() + i);
+            weekDates.push(d);
+        }
+        
+        document.getElementById('datePicker').value = startOfWeek.toISOString().split('T')[0];
+        updateWeekLabel();
+    }
+
+    function updateWeekLabel() {
+        const d1 = startOfWeek.toLocaleDateString('vi-VN');
+        const d2 = endOfWeek.toLocaleDateString('vi-VN');
+        document.getElementById('weekLabel').innerText = `${d1} - ${d2}`;
+        
+        const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+        weekDates.forEach((d, i) => {
+            const th = document.getElementById(`th-${days[i]}`);
+            const dayName = i === 6 ? "CN" : `Thứ ${i+2}`;
+            th.innerHTML = `${dayName}<br><span style="font-size:12px; font-weight:normal; color:#666;">${d.getDate()}/${d.getMonth()+1}</span>`;
+        });
+    }
+
+    function changeWeek(offset) {
+        currentDate = new Date(startOfWeek);
+        currentDate.setDate(currentDate.getDate() + (offset * 7));
+        calculateWeekDates();
+        fetchSchedules();
+    }
+    
+    function onDatePicked(val) {
+        if (!val) return;
+        currentDate = new Date(val);
+        calculateWeekDates();
+        fetchSchedules();
+    }
+
+    // --- Render logic ---
+    function renderDashboard() {
+        // Stats
+        document.getElementById('statTotalSessions').innerText = schedules.length;
+        const uniqueTeachers = new Set(schedules.map(s => s.teacherId));
+        document.getElementById('statTotalTeachers').innerText = uniqueTeachers.size;
+
+        // Grid
+        const tbody = document.getElementById('calendarBody');
+        let html = '';
+        
+        for (let i = 0; i < 8; i++) {
+            const rawSlot = i + 1;
+            html += `<tr>`;
+            
+            // Morning/Afternoon indicator
+            if (i === 0) {
+                html += `<td rowspan="4" class="session-indicator">SÁNG</td>`;
+            } else if (i === 4) {
+                html += `<td rowspan="4" class="session-indicator afternoon">CHIỀU</td>`;
+            }
+
+            // Time slot
+            html += `<td>
+                <div class="slot-label">Tiết ${rawSlot}</div>
+                <div style="font-size:10px; color:#666;">${timeSlots[i]}</div>
+            </td>`;
+
+            // Days
+            for (let d = 0; d < 7; d++) {
+                const colDate = weekDates[d];
+                // Find matching schedule
+                const match = schedules.find(s => {
+                    const sDate = new Date(s.date);
+                    return sDate.getDate() === colDate.getDate() && 
+                           sDate.getMonth() === colDate.getMonth() && 
+                           sDate.getFullYear() === colDate.getFullYear() &&
+                           s.rawSlot === rawSlot;
+                });
+
+                if (match) {
+                    html += `<td>
+                        <div class="schedule-item" onclick="openOptionsDialog(${match.id})">
+                            <strong>${match.subjectName}</strong>
+                            <div style="color:#666;">GV: ${match.lecturer}</div>
+                            <div style="color:#666;">P.${match.room}</div>
+                        </div>
+                    </td>`;
+                } else {
+                    html += `<td></td>`;
+                }
+            }
+            html += `</tr>`;
+        }
+        tbody.innerHTML = html;
+    }
+
+    function renderRequests() {
+        const list = document.getElementById('requestsList');
+        if (!list) return;
+        
+        let filteredReqs = [];
+        if (selectedClass) {
+            const currentClassId = selectedClass.id || selectedClass.classId;
+            filteredReqs = requests.filter(r => {
+                try {
+                    const reqData = JSON.parse(r.content);
+                    return reqData.ClassId.toString() === currentClassId.toString();
+                } catch(e) { return false; }
+            });
+        }
+
+        if (filteredReqs.length === 0) {
+            list.innerHTML = '<div style="padding:32px; text-align:center; color:#666;">Không có yêu cầu nào đang chờ duyệt cho lớp này.</div>';
+            return;
+        }
+        
+        list.innerHTML = filteredReqs.map(r => {
+            const tName = r.senderName || 'Giáo viên';
+            const tInit = tName.charAt(0).toUpperCase();
+            
+            let reqData = {};
+            try { reqData = JSON.parse(r.content); } catch(e) {}
+            
+            return `
+            <div class="request-item card mb-3 border border-warning shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div style="width:40px; height:40px; background:#FFE0B2; color:#F57C00; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                            ${tInit}
+                        </div>
+                        <div>
+                            <div style="font-weight:bold;">${tName} - Yêu cầu: ${reqData.Type === 'LEAVE' ? 'Báo nghỉ' : 'Dạy bù'}</div>
+                            <div style="color:#666; font-size:12px;">Lý do: ${reqData.Reason || ''}</div>
+                            ${reqData.Type === 'MAKEUP' ? `<div style="color:green; font-size:12px; font-weight:bold;">Đề xuất dạy bù: Tiết ${reqData.NewSlot} ngày ${reqData.NewDate}</div>` : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-outline-danger btn-sm" onclick="updateRequestStatus(${r.id}, 'reject')">&#10006; Từ chối</button>
+                        <button class="btn btn-success btn-sm" onclick="updateRequestStatus(${r.id}, 'approve')">&#10004; Duyệt</button>
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    // --- Actions ---
+    let currentSchedule = null;
+
+    function openOptionsDialog(id) {
+        currentSchedule = schedules.find(s => s.id === id);
+        if (!currentSchedule) return;
+        
+        document.getElementById('optionsContent').innerHTML = `
+            <p><strong>Môn:</strong> ${currentSchedule.subjectCode}</p>
+            <p><strong>Giáo viên:</strong> ${currentSchedule.lecturer}</p>
+            <p><strong>Phòng:</strong> ${currentSchedule.room}</p>
+        `;
+        document.getElementById('optionsDialog').showModal();
+    }
+
+    async function openEditScheduleDialog() {
+        document.getElementById('optionsDialog').close();
+        document.getElementById('editSubjectName').innerText = `Môn: ${currentSchedule.subjectName}`;
+        document.getElementById('editScheduleId').value = currentSchedule.id;
+
+        // populate rooms
+        const selRoom = document.getElementById('editRoomId');
+        selRoom.innerHTML = rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        selRoom.value = currentSchedule.roomId;
+
+        // fetch substitute teachers
+        const selTeacher = document.getElementById('editTeacherId');
+        selTeacher.innerHTML = '<option value="">Đang tải...</option>';
+        document.getElementById('editDialog').showModal();
+
+        try {
+            const res = await fetch(`/api/web/schedule/substitutes?scheduleId=${currentSchedule.id}`);
+            if (!res.ok) {
+                console.error("Failed to fetch schedules");
+                schedules = [];
+                renderDashboard();
+                return;
+            }
+            const subs = await res.json();
+            
+            // if current teacher is not in subs, add them
+            if (!subs.some(t => t.id === currentSchedule.teacherId)) {
+                subs.unshift({ id: currentSchedule.teacherId, fullName: currentSchedule.lecturer });
+            }
+            
+            selTeacher.innerHTML = subs.map(t => `<option value="${t.id}">${t.fullName}</option>`).join('');
+            selTeacher.value = currentSchedule.teacherId;
+        } catch(e) {
+            alert('Lỗi tải giảng viên thay thế');
+            document.getElementById('editDialog').close();
+        }
+    }
+
+    async function saveEditSchedule() {
+        const tId = parseInt(document.getElementById('editTeacherId').value);
+        const rId = parseInt(document.getElementById('editRoomId').value);
+        if(!tId || !rId) return;
+
+        const reqData = {
+            id: currentSchedule.id,
+            slot: currentSchedule.rawSlot,
+            date: currentSchedule.date,
+            roomId: rId,
+            teacherId: tId,
+            classId: currentSchedule.classId,
+            subjectCode: currentSchedule.subjectCode,
+            sessionNo: currentSchedule.sessionNo,
+            status: currentSchedule.status,
+            classSize: currentSchedule.classSize
+        };
+
+        const res = await fetch(`/api/web/schedule/edit/${currentSchedule.id}`, {
+            method: 'PUT',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(reqData)
+        });
+
+        if (res.ok) {
+            document.getElementById('editDialog').close();
+            fetchSchedules();
+        } else {
+            alert('Lỗi cập nhật: ' + await res.text());
+        }
+    }
+
+    async function deleteSchedule() {
+        if (!confirm('Bạn có chắc chắn muốn xóa tiết học này không?')) return;
+        document.getElementById('optionsDialog').close();
+        const res = await fetch(`/api/web/schedule/delete/${currentSchedule.id}`, { method: 'DELETE' });
+        if (res.ok) fetchSchedules();
+        else alert('Lỗi xóa: ' + await res.text());
+    }
+
+    async function deleteAllSchedules() {
+        if(!selectedClass) return;
+        if (!confirm('Cảnh báo nguy hiểm!\nHành động này sẽ XÓA TOÀN BỘ lịch học của lớp này. Bạn có chắc chắn không?')) return;
+        
+        const res = await fetch(`/api/web/schedule/class/${selectedClass.id || selectedClass.classId}`, { method: 'DELETE' });
+        if (res.ok) fetchSchedules();
+        else alert('Lỗi xóa: ' + await res.text());
+    }
+
+    let pendingSubstituteRequestId = null;
+
+    async function updateRequestStatus(id, action) {
+        if (action === 'approve') {
+            const req = requests.find(r => r.id === id);
+            if (req) {
+                try {
+                    const reqData = JSON.parse(req.content);
+                    if (reqData.Type === 'LEAVE') {
+                        pendingSubstituteRequestId = id;
+                        await loadSubstitutes(reqData.ScheduleId);
+                        document.getElementById('substituteModal').showModal();
+                        return;
+                    }
+                } catch(e) {}
+            }
+        }
+        await submitRequestAction(id, action, null);
+    }
+
+    async function submitRequestAction(id, action, substituteTeacherId) {
+        let url = `/api/web/request/${id}/${action}`;
+        if (substituteTeacherId) {
+            url += `?substituteTeacherId=${substituteTeacherId}`;
+        }
+
+        const res = await fetch(url, {
+            method: 'POST'
+        });
+        
+        if (res.ok) {
+            alert(action === 'approve' ? 'Đã duyệt đơn!' : 'Đã từ chối đơn!');
+            fetchRequests();
+        } else {
+            alert('Lỗi: ' + await res.text());
+        }
+    }
+
+    async function loadSubstitutes(scheduleId) {
+        const select = document.getElementById('substituteSelect');
+        select.innerHTML = '<option value="">Đang tải...</option>';
+        try {
+            const res = await fetch(`/api/web/request/schedule/substitutes/${scheduleId}`);
+            if (res.ok) {
+                const teachers = await res.json();
+                select.innerHTML = '';
+                if (teachers.length === 0) {
+                    select.innerHTML = '<option value="">Không có giáo viên rảnh</option>';
+                } else {
+                    teachers.forEach(t => {
+                        select.innerHTML += `<option value="${t.id}">${t.fullName}</option>`;
+                    });
+                }
+            }
+        } catch(e) {}
+    }
+
+    function closeSubstituteModal() {
+        document.getElementById('substituteModal').close();
+        pendingSubstituteRequestId = null;
+    }
+
+    async function confirmSubstitute() {
+        const val = document.getElementById('substituteSelect').value;
+        if (!val) {
+            alert("Vui lòng chọn một giáo viên."); return;
+        }
+        closeSubstituteModal();
+        await submitRequestAction(pendingSubstituteRequestId, 'Approved', val);
+    }
+
+    // --- Bulk Schedule Logic ---
+    let bulkDaySlotsCount = 0;
+    let availableSubjectGroups = [];
+
+    function openBulkScheduleDialog() {
+        document.getElementById('bulkClassName').innerText = selectedClass.name || selectedClass.className;
+        document.getElementById('bulkStartDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('bulkTotalSessions').value = '';
+        
+        availableSubjectGroups = [...new Set(subjects.map(s => s.group).filter(g => g))].sort();
+        const selGroup = document.getElementById('bulkSubjectGroup');
+        selGroup.innerHTML = '<option value="">Chọn Tổ hợp</option>' + availableSubjectGroups.map(g => `<option value="${g}">${g}</option>`).join('');
+        
+        document.getElementById('bulkSubjectCode').innerHTML = '<option value="">Chọn Môn học</option>';
+        document.getElementById('bulkSubjectCode').disabled = true;
+        
+        document.getElementById('bulkTeacherId').innerHTML = '<option value="">Chọn Giảng viên</option>';
+        document.getElementById('bulkTeacherId').disabled = true;
+
+        document.getElementById('bulkDaySlotsBody').innerHTML = '';
+        bulkDaySlotsCount = 0;
+        addBulkDaySlot(); // add 1 default row
+
+        document.getElementById('bulkDialog').showModal();
+    }
+
+    function onBulkSubjectGroupChange() {
+        const group = document.getElementById('bulkSubjectGroup').value;
+        const selSubj = document.getElementById('bulkSubjectCode');
+        const selTeacher = document.getElementById('bulkTeacherId');
+        
+        selSubj.innerHTML = '<option value="">Chọn Môn học</option>';
+        selSubj.disabled = true;
+        selTeacher.innerHTML = '<option value="">Chọn Giảng viên</option>';
+        selTeacher.disabled = true;
+        
+        if (group) {
+            const filteredSubjects = subjects.filter(s => s.group === group);
+            selSubj.innerHTML += '<option value="">Chọn Môn học</option>' + filteredSubjects.map(s => `<option value="${s.code}">${s.name} (${s.code})</option>`).join('');
+            selSubj.disabled = false;
+        }
+    }
+    
+    async function onBulkSubjectChange() {
+        const code = document.getElementById('bulkSubjectCode').value;
+        const selTeacher = document.getElementById('bulkTeacherId');
+        
+        selTeacher.innerHTML = '<option value="">Đang tải...</option>';
+        selTeacher.disabled = true;
+        
+        if (code) {
+            const subj = subjects.find(s => s.code === code);
+            if (subj) {
+                try {
+                    const res = await fetch(`/api/web/schedule/subject/${subj.id}/teachers`);
+                    if (res.ok) {
+                        const teachersForSubj = await res.json();
+                        selTeacher.innerHTML = '<option value="">Chọn Giảng viên</option>' + teachersForSubj.map(t => `<option value="${t.id}">${t.fullName}</option>`).join('');
+                        selTeacher.disabled = false;
+                        return;
+                    }
+                } catch(e) { console.error(e); }
+            }
+        }
+        selTeacher.innerHTML = '<option value="">Chọn Giảng viên</option>';
+    }
+
+    function addBulkDaySlot() {
+        bulkDaySlotsCount++;
+        const id = bulkDaySlotsCount;
+        const tr = document.createElement('tr');
+        tr.id = `bulk-row-${id}`;
+        
+        let daysHtml = `<select class="bulk-day" style="width:100%; padding:8px;">
+            <option value="1">Thứ 2</option>
+            <option value="2">Thứ 3</option>
+            <option value="3">Thứ 4</option>
+            <option value="4">Thứ 5</option>
+            <option value="5">Thứ 6</option>
+            <option value="6">Thứ 7</option>
+            <option value="0">CN</option>
+        </select>`;
+
+        let slotsHtml = `<select class="bulk-slot" style="width:100%; padding:8px;">`;
+        for(let i=1; i<=8; i++) {
+            slotsHtml += `<option value="${i}">Tiết ${i}</option>`;
+        }
+        slotsHtml += `</select>`;
+
+        let roomsHtml = `<select class="bulk-room" style="width:100%; padding:8px;">`;
+        roomsHtml += rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        roomsHtml += `</select>`;
+
+        tr.innerHTML = `
+            <td style="padding:4px;">${daysHtml}</td>
+            <td style="padding:4px;">${slotsHtml}</td>
+            <td style="padding:4px;">${roomsHtml}</td>
+            <td style="padding:4px;"><button type="button" class="btn-outline danger" style="padding:4px 8px;" onclick="document.getElementById('bulk-row-${id}').remove()">X</button></td>
+        `;
+        document.getElementById('bulkDaySlotsBody').appendChild(tr);
+    }
+
+    async function saveBulkSchedule() {
+        const payload = {
+            startDate: document.getElementById('bulkStartDate').value,
+            totalSessions: parseInt(document.getElementById('bulkTotalSessions').value),
+            subjectCode: document.getElementById('bulkSubjectCode').value,
+            teacherId: parseInt(document.getElementById('bulkTeacherId').value),
+            classId: selectedClass.id || selectedClass.classId,
+            daySlots: []
+        };
+
+        const rows = document.getElementById('bulkDaySlotsBody').querySelectorAll('tr');
+        rows.forEach(tr => {
+            const day = parseInt(tr.querySelector('.bulk-day').value);
+            const slot = parseInt(tr.querySelector('.bulk-slot').value);
+            const room = parseInt(tr.querySelector('.bulk-room').value);
+            payload.daySlots.push({ dayOfWeek: day, slot: slot, roomId: room });
+        });
+
+        if (payload.daySlots.length === 0) {
+            alert('Vui lòng thêm ít nhất 1 buổi học trong tuần');
+            return;
+        }
+
+        const btn = document.querySelector('#bulkDialog .btn-solid');
+        btn.innerText = 'Đang xử lý...';
+        btn.disabled = true;
+
+        const res = await fetch('/api/web/schedule/bulk', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        btn.innerText = 'Tạo lịch hàng loạt';
+        btn.disabled = false;
+
+        if (res.ok) {
+            document.getElementById('bulkDialog').close();
+            fetchSchedules();
+        } else {
+            const err = await res.json();
+            alert('Lỗi: ' + (err.message || 'Có lỗi xảy ra'));
+        }
+    }
+</script>

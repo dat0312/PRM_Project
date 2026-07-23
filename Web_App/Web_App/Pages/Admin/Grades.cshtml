@@ -1,0 +1,819 @@
+@page
+@model Web_App.Pages.Admin.GradesModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Quản lý Điểm số";
+}
+
+<style>
+    .page-container {
+        padding: 24px;
+    }
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .header-section h1 {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1A1C1C;
+        margin: 0 0 4px 0;
+    }
+    .header-section p {
+        color: #666;
+        font-size: 14px;
+        margin: 0;
+    }
+    .main-card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #E2E2E2;
+        display: flex;
+        flex-direction: column;
+    }
+    .filters-section {
+        padding: 16px;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .search-box {
+        position: relative;
+        margin-bottom: 16px;
+    }
+    .search-box input {
+        width: 100%;
+        padding: 8px 16px 8px 40px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 10px;
+        color: #999;
+    }
+    .filter-row {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+    }
+    .filter-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .filter-item label {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    .filter-item select {
+        padding: 8px 16px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        outline: none;
+        background: #fff;
+    }
+    .reset-btn {
+        background: #EEEEEE;
+        color: #333;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 38px;
+    }
+    .lock-btn {
+        padding: 10px 24px;
+        border-radius: 8px;
+        border: none;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .lock-btn.locked {
+        background: #4CAF50;
+    }
+    .lock-btn.unlocked {
+        background: #F44336;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th {
+        background: #F9F9F9;
+        color: #666;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #EEEEEE;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+    .code-col { color: #A04100; font-weight: 600; }
+    .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #E0E0E0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+        font-size: 12px;
+        color: #333;
+    }
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+    }
+    .rank-xuat-sac { color: purple; font-weight: bold; }
+    .rank-gioi { color: #2196F3; font-weight: bold; }
+    .rank-normal { color: #333; font-weight: bold; }
+
+    /* Edit Screen Styles */
+    .edit-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .edit-header h1 { font-size: 20px; margin: 0; color: #1A1C1C; }
+    .edit-header p { margin: 4px 0 0 0; color: #666; font-size: 14px; }
+    .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #666; padding: 8px; }
+    .back-btn:hover { color: #333; }
+    
+    .accordion-item {
+        background: #fff;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+    .accordion-header {
+        padding: 16px 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #F9F9FA;
+        font-weight: 600;
+        font-size: 15px;
+        color: #333;
+    }
+    .accordion-header:hover { background: #f0f0f0; }
+    .accordion-content {
+        padding: 20px;
+        background: #fff;
+        display: none;
+        border-top: 1px solid #E2E2E2;
+        gap: 16px;
+    }
+    .accordion-content.active {
+        display: flex;
+    }
+    
+    .excel-btn {
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #fff;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+    .export-btn { background: #2196F3; }
+    .import-btn { background: #4CAF50; }
+</style>
+
+<div class="page-container">
+    <!-- Main List View -->
+    <div id="mainContainer">
+        <div class="header-section">
+            <div>
+                <h1>Quản lý Điểm số</h1>
+                <p>Xem điểm, đánh giá danh hiệu học sinh, khóa sổ và xuất/nhập điểm Excel.</p>
+            </div>
+            <button id="btnLockAll" class="lock-btn unlocked" onclick="toggleLock()">
+                <i class="fas fa-lock"></i> Khóa toàn trường
+            </button>
+        </div>
+
+        <div class="main-card">
+            <div class="filters-section">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, ID..." oninput="applyFilters()">
+                </div>
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>Năm học</label>
+                        <select id="filterYear" onchange="applyFilters()">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Khóa</label>
+                        <select id="filterCohort" onchange="applyFilters()">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Lớp</label>
+                        <select id="filterClass" onchange="applyFilters()">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">MÃ SỐ</th>
+                            <th style="width: 25%;">TÊN</th>
+                            <th style="width: 10%;">LỚP</th>
+                            <th style="width: 10%;">KHÓA</th>
+                            <th style="width: 15%;">ĐIỂM TỔNG KẾT</th>
+                            <th style="width: 10%; text-align: center;">HÀNH ĐỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <tr><td colspan="7" style="text-align: center;">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit/Excel Screen View (Hidden by default) -->
+    <div id="editContainer" style="display:none;">
+        <div class="edit-header">
+            <button class="back-btn" onclick="closeEditScreen()"><i class="fas fa-arrow-left"></i></button>
+            <div>
+                <h1 id="editTitle">Sửa điểm - Student Name - ClassName</h1>
+                <p>Cập nhật điểm số cho học sinh.</p>
+            </div>
+            <button class="lock-btn" style="background:#F27024; margin-left:auto;" onclick="saveGrades()">
+                <i class="fas fa-save"></i> Lưu thay đổi
+            </button>
+        </div>
+
+        <div id="subjectsAccordion">
+            <!-- Render subjects as accordion items here -->
+        </div>
+
+        <input type="file" id="fileInput" style="display:none;" accept=".xlsx, .xls" onchange="onFileSelected(event)">
+    </div>
+</div>
+
+<script>
+    let allStudents = [];
+    let filteredStudents = [];
+    let studentGrades = {};
+    let classesList = [];
+    let subjectsList = [];
+    let academicYears = [];
+
+    let currentEditingClassId = null;
+    let currentEditingStudentId = null;
+    let currentImportSubjectId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadData();
+    });
+
+    async function loadData() {
+        try {
+            const [usersRes, gradesRes, classesRes, subjectsRes, yearsRes] = await Promise.all([
+                fetch('/api/web/user/users'),
+                fetch('/api/web/grades/all'),
+                fetch('/api/web/user/classes'),
+                fetch('/api/web/user/subjects'),
+                fetch('/api/web/grades/academic-years')
+            ]);
+
+            const users = await usersRes.json();
+            const grades = await gradesRes.json();
+            classesList = await classesRes.json();
+            subjectsList = await subjectsRes.json();
+            academicYears = await yearsRes.json();
+
+            // Populate Years
+            const yearSelect = document.getElementById('filterYear');
+            yearSelect.innerHTML = '<option value="">Tất cả</option>';
+            academicYears.forEach(y => {
+                yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+            });
+            if (academicYears.length > 0) yearSelect.value = academicYears[0];
+
+            // Process Students
+            const studentsOnly = users.filter(u => u.roles && u.roles.includes('Student'));
+            
+            let gradesMap = {};
+            let combinedStudents = [];
+            let processed = new Set();
+
+            // 1. Current class for students
+            studentsOnly.forEach(u => {
+                if (u.classId) {
+                    processed.add(u.id);
+                    let cls = classesList.find(c => c.id === u.classId) || { name: '', grade: 0, startYear: 0, cohort: '' };
+                    combinedStudents.push({
+                        id: u.id,
+                        name: u.name || u.fullName,
+                        code: u.code,
+                        classId: u.classId,
+                        className: cls.name,
+                        cohort: cls.cohort,
+                        startYear: cls.startYear,
+                        baseGrade: cls.grade
+                    });
+                }
+            });
+
+            // 2. Historical classes from grades
+            grades.forEach(g => {
+                if (!gradesMap[g.studentId]) gradesMap[g.studentId] = [];
+                gradesMap[g.studentId].push(g);
+
+                if (g.classId && !processed.has(g.studentId)) {
+                    processed.add(g.studentId);
+                    let cls = classesList.find(c => c.id === g.classId) || { name: '', grade: 0, startYear: 0, cohort: '' };
+                    let u = studentsOnly.find(su => su.id === g.studentId) || { code: '', fullName: g.studentName };
+                    
+                    combinedStudents.push({
+                        id: g.studentId,
+                        name: u.name || u.fullName || g.studentName,
+                        code: u.code,
+                        classId: g.classId,
+                        className: cls.name,
+                        cohort: cls.cohort,
+                        startYear: cls.startYear,
+                        baseGrade: cls.grade
+                    });
+                }
+            });
+
+            allStudents = combinedStudents;
+            studentGrades = gradesMap;
+
+            // Populate Cohorts & Classes
+            let cohorts = [...new Set(allStudents.map(s => s.cohort).filter(c => c))].sort();
+            const cohortSel = document.getElementById('filterCohort');
+            cohorts.forEach(c => cohortSel.innerHTML += `<option value="${c}">${c}</option>`);
+
+            applyFilters();
+            updateLockBtnUI();
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('studentTableBody').innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">Lỗi tải dữ liệu: ${e.message} \nStack: ${e.stack}</td></tr>`;
+        }
+    }
+
+    function applyFilters() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const fYear = document.getElementById('filterYear').value;
+        const fCohort = document.getElementById('filterCohort').value;
+        const fClass = document.getElementById('filterClass').value;
+        const fRank = document.getElementById('filterRank')?.value || '';
+
+        let selectedStartYear = null;
+        if (fYear) {
+            selectedStartYear = parseInt(fYear.split('-')[0]);
+        }
+
+        let dynamicStudents = [];
+        let uniqueClasses = new Set();
+
+        allStudents.forEach(s => {
+            let computedName = s.className || '';
+            let startYear = s.startYear;
+            let baseGrade = s.baseGrade || 10;
+
+            if (selectedStartYear && startYear > 0) {
+                let yearDiff = selectedStartYear - startYear;
+                let computedGrade = 10 + yearDiff;
+                if (computedGrade < 10 || computedGrade > 12) return; // not active
+                
+                let baseName = computedName.startsWith(baseGrade.toString()) 
+                    ? computedName.substring(baseGrade.toString().length) 
+                    : computedName;
+                computedName = computedGrade + baseName;
+            }
+
+            dynamicStudents.push({...s, className: computedName});
+            uniqueClasses.add(computedName);
+        });
+
+        // Update Class Dropdown
+        let sortedClasses = Array.from(uniqueClasses).sort();
+        const classSel = document.getElementById('filterClass');
+        classSel.innerHTML = '<option value="">Tất cả</option>';
+        sortedClasses.forEach(c => {
+            let sel = (c === fClass) ? 'selected' : '';
+            classSel.innerHTML += `<option value="${c}" ${sel}>${c}</option>`;
+        });
+
+        filteredStudents = dynamicStudents.filter(s => {
+            if (query && !s.name.toLowerCase().includes(query) && !(s.code||'').toLowerCase().includes(query)) return false;
+            if (fCohort && s.cohort !== fCohort) return false;
+            if (fClass && s.className !== fClass) return false;
+
+            let grades = (studentGrades[s.id] || []).filter(g => !fYear || g.academicYear === fYear);
+            let rank = "Chưa xếp loại";
+            if (grades.length > 0) {
+                rank = calculateRank(groupGradesBySubject(grades));
+            }
+
+            if (fRank && fRank !== "Tất cả" && rank !== fRank) return false;
+            return true;
+        });
+
+        renderTable();
+        updateLockBtnUI();
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('filterCohort').value = '';
+        document.getElementById('filterClass').value = '';
+        document.getElementById('filterRank').value = '';
+        if (academicYears.length > 0) document.getElementById('filterYear').value = academicYears[0];
+        applyFilters();
+    }
+
+    function groupGradesBySubject(grades) {
+        let grouped = {};
+        let subjectIds = {};
+        grades.forEach(g => {
+            if (!grouped[g.subjectName]) {
+                grouped[g.subjectName] = {};
+                subjectIds[g.subjectName] = g.subjectId;
+            }
+            grouped[g.subjectName][g.semester] = g;
+        });
+
+        let result = [];
+        for (let sub in grouped) {
+            let s1 = grouped[sub][1];
+            let s2 = grouped[sub][2];
+            let yearlyAvg = null;
+            if (s1 && s2 && s1.finalScore != null && s2.finalScore != null) {
+                let calcAvg = (g) => {
+                    let sum = 0, count = 0;
+                    if(g.attendanceScore!=null) {sum+=g.attendanceScore; count++;}
+                    if(g.oralScore1!=null) {sum+=g.oralScore1; count++;}
+                    if(g.oralScore2!=null) {sum+=g.oralScore2; count++;}
+                    if(g.fifteenMinScore1!=null) {sum+=g.fifteenMinScore1; count++;}
+                    if(g.fifteenMinScore2!=null) {sum+=g.fifteenMinScore2; count++;}
+                    if(g.midtermScore!=null) {sum+=g.midtermScore*2; count+=2;}
+                    if(g.finalScore!=null) {sum+=g.finalScore*3; count+=3;}
+                    return count > 0 ? sum/count : null;
+                };
+
+                let a1 = calcAvg(s1);
+                let a2 = calcAvg(s2);
+                if (a1 != null && a2 != null) yearlyAvg = (a1 + a2) / 2;
+            }
+            result.push({ subject: sub, subjectId: subjectIds[sub], yearlyAvg: yearlyAvg });
+        }
+        return result;
+    }
+
+    function calculateTotalAverage(subjects) {
+        if (!subjects || subjects.length === 0) return null;
+        let sum = 0, count = 0;
+        subjects.forEach(s => {
+            if (s.yearlyAvg != null) { sum += s.yearlyAvg; count++; }
+        });
+        return count === 0 ? null : sum / count;
+    }
+
+    function calculateRank(subjects) {
+        if (!subjects || subjects.length === 0) return "Chưa xếp loại";
+        let averages = [];
+        for (let s of subjects) {
+            if (s.yearlyAvg == null) return "Chưa xếp loại";
+            averages.push(s.yearlyAvg);
+        }
+
+        let allGte65 = averages.every(a => a >= 6.5);
+        let allGte50 = averages.every(a => a >= 5.0);
+        let noLt35 = averages.every(a => a >= 3.5);
+        
+        let c90 = averages.filter(a => a >= 9.0).length;
+        let c80 = averages.filter(a => a >= 8.0).length;
+        let c65 = averages.filter(a => a >= 6.5).length;
+        let c50 = averages.filter(a => a >= 5.0).length;
+
+        if (allGte65 && c90 >= 6) return "Học sinh Xuất sắc";
+        if (allGte65 && c80 >= 6) return "Học sinh Giỏi";
+        if (allGte50 && c65 >= 6) return "Xếp loại Khá";
+        if (c50 >= 6 && noLt35) return "Xếp loại Đạt";
+        return "Xếp loại Chưa đạt";
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('studentTableBody');
+        tbody.innerHTML = '';
+        if (filteredStudents.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">Không có dữ liệu</td></tr>`;
+            return;
+        }
+
+        const fYear = document.getElementById('filterYear').value;
+
+        filteredStudents.forEach(s => {
+            let grades = (studentGrades[s.id] || []).filter(g => !fYear || g.academicYear === fYear);
+            let subjects = groupGradesBySubject(grades);
+            let rank = grades.length === 0 ? "Chưa xếp loại" : calculateRank(subjects);
+            let totalAvg = grades.length === 0 ? "--" : (calculateTotalAverage(subjects)?.toFixed(1) || "--");
+            
+            let rankClass = "rank-normal";
+            if (rank.includes("Xuất sắc")) rankClass = "rank-xuat-sac";
+            else if (rank.includes("Giỏi")) rankClass = "rank-gioi";
+
+            let initials = s.name.charAt(0).toUpperCase();
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="code-col">${s.code || s.id}</td>
+                <td>
+                    <div style="display:flex; align-items:center;">
+                        <span class="avatar">${initials}</span>
+                        ${s.name}
+                    </div>
+                </td>
+                <td>${s.className}</td>
+                <td>${s.cohort || '-'}</td>
+                <td style="font-weight:bold;">${totalAvg}</td>
+                <td style="text-align:center;">
+                    <button class="action-btn" onclick="openEditScreen(${s.id}, '${s.name.replace(/'/g, "\\'")}', ${s.classId}, '${s.className}')" title="Sửa điểm">
+                        <i class="fas fa-edit" style="color: #2196F3; font-size: 18px;"></i>
+                    </button>
+                    <button class="action-btn" onclick="deleteGrades(${s.id}, '${s.name.replace(/'/g, "\\'")}')" title="Xóa toàn bộ điểm">
+                        <i class="fas fa-trash" style="color: #F44336; font-size: 18px; margin-left: 8px;"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function deleteGrades(studentId, name) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa TOÀN BỘ điểm của học sinh "${name}" không?`)) return;
+        try {
+            const res = await fetch(`/api/web/grades/student/${studentId}`, { method: 'DELETE' });
+            if (res.ok) {
+                alert("Xóa thành công!");
+                await loadData();
+            } else {
+                alert("Lỗi xóa điểm");
+            }
+        } catch (e) {
+            alert("Lỗi kết nối");
+        }
+    }
+
+    function updateLockBtnUI() {
+        const btn = document.getElementById('btnLockAll');
+        const fClass = document.getElementById('filterClass').value;
+        
+        let isLocked = false;
+        if (!fClass) {
+            if (classesList.length > 0) {
+                isLocked = classesList.every(c => c.isGradeLocked);
+            }
+        } else {
+            let cls = classesList.find(c => c.name === fClass || `${c.grade}${c.name}` === fClass || c.name.includes(fClass));
+            if (cls) isLocked = cls.isGradeLocked;
+        }
+
+        if (isLocked) {
+            btn.className = 'lock-btn locked';
+            btn.innerHTML = `<i class="fas fa-lock-open"></i> ${fClass ? "Mở khóa sổ điểm" : "Mở khóa toàn trường"}`;
+        } else {
+            btn.className = 'lock-btn unlocked';
+            btn.innerHTML = `<i class="fas fa-lock"></i> ${fClass ? "Khóa sổ điểm" : "Khóa toàn trường"}`;
+        }
+    }
+
+    async function toggleLock() {
+        const fClass = document.getElementById('filterClass').value;
+        let isLocked = document.getElementById('btnLockAll').classList.contains('locked'); // Currently locked, so action is to UNLOCK
+        let newLockState = !isLocked;
+
+        try {
+            let res;
+            if (!fClass) {
+                res = await fetch(`/api/web/grades/lock-all`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(newLockState)
+                });
+            } else {
+                let cls = classesList.find(c => c.name === fClass || `${c.grade}${c.name}` === fClass || c.name.includes(fClass));
+                if (!cls) return;
+                res = await fetch(`/api/web/grades/class/${cls.id}/lock`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(newLockState)
+                });
+            }
+
+            if (res.ok) {
+                alert(newLockState ? "Đã khóa sổ điểm thành công" : "Đã mở khóa sổ điểm thành công");
+                await loadData();
+            } else {
+                alert("Có lỗi xảy ra");
+            }
+        } catch (e) {
+            alert("Lỗi kết nối");
+        }
+    }
+
+    // Edit Screen / Accordion functions
+    function openEditScreen(studentId, studentName, classId, className) {
+        if (!classId) {
+            alert("Học sinh này chưa được xếp lớp hợp lệ.");
+            return;
+        }
+        currentEditingClassId = classId;
+        currentEditingStudentId = studentId;
+        document.getElementById('editTitle').innerText = `Sửa điểm - ${studentName} - ${className}`;
+        
+        document.getElementById('mainContainer').style.display = 'none';
+        document.getElementById('editContainer').style.display = 'block';
+
+        const accContainer = document.getElementById('subjectsAccordion');
+        accContainer.innerHTML = '';
+
+        let grades = studentGrades[studentId] || [];
+        
+        subjectsList.forEach(sub => {
+            let s1 = grades.find(g => g.subjectId === sub.id && g.semester === 1) || {};
+            let s2 = grades.find(g => g.subjectId === sub.id && g.semester === 2) || {};
+
+            let item = document.createElement('div');
+            item.className = 'accordion-item';
+            item.innerHTML = `
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>${sub.name}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="accordion-content" style="flex-direction: column;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px;">
+                        <thead>
+                            <tr style="background: #F9F9F9;">
+                                <th style="border: 1px solid #E2E2E2; padding: 8px;">Học kỳ</th>
+                                <th style="border: 1px solid #E2E2E2; padding: 8px;">Điểm CC</th>
+                                <th style="border: 1px solid #E2E2E2; padding: 8px;">Miệng 1</th>
+                                <th style="border: 1px solid #E2E2E2; padding: 8px;">Miệng 2</th>
+                                <th style="border: 1px solid #E2E2E2; padding: 8px;">15 Phút 1</th>
+                                <th style="border: 1px solid #E2E2E2; padding: 8px;">15 Phút 2</th>
+                                <th style="border: 1px solid #E2E2E2; padding: 8px;">Giữa kỳ</th>
+                                <th style="border: 1px solid #E2E2E2; padding: 8px;">Cuối kỳ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-subject="${sub.id}" data-semester="1">
+                                <td style="border: 1px solid #E2E2E2; padding: 8px; text-align: center;">Học kỳ 1</td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="attendanceScore" value="${s1.attendanceScore ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="oralScore1" value="${s1.oralScore1 ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="oralScore2" value="${s1.oralScore2 ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="fifteenMinScore1" value="${s1.fifteenMinScore1 ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="fifteenMinScore2" value="${s1.fifteenMinScore2 ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="midtermScore" value="${s1.midtermScore ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="finalScore" value="${s1.finalScore ?? ''}"></td>
+                            </tr>
+                            <tr data-subject="${sub.id}" data-semester="2">
+                                <td style="border: 1px solid #E2E2E2; padding: 8px; text-align: center;">Học kỳ 2</td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="attendanceScore" value="${s2.attendanceScore ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="oralScore1" value="${s2.oralScore1 ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="oralScore2" value="${s2.oralScore2 ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="fifteenMinScore1" value="${s2.fifteenMinScore1 ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="fifteenMinScore2" value="${s2.fifteenMinScore2 ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="midtermScore" value="${s2.midtermScore ?? ''}"></td>
+                                <td style="border: 1px solid #E2E2E2; padding: 8px;"><input style="width: 45px; padding: 4px; text-align: center; border: 1px solid #E2E2E2; border-radius: 4px;" type="number" step="0.1" name="finalScore" value="${s2.finalScore ?? ''}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            accContainer.appendChild(item);
+        });
+    }
+
+    function toggleAccordion(headerEl) {
+        const content = headerEl.nextElementSibling;
+        const icon = headerEl.querySelector('i');
+        
+        if (content.classList.contains('active')) {
+            content.classList.remove('active');
+            icon.className = 'fas fa-chevron-down';
+        } else {
+            // Close others
+            document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.accordion-header i').forEach(el => el.className = 'fas fa-chevron-down');
+            
+            content.classList.add('active');
+            icon.className = 'fas fa-chevron-up';
+        }
+    }
+
+    function closeEditScreen() {
+        document.getElementById('mainContainer').style.display = 'block';
+        document.getElementById('editContainer').style.display = 'none';
+        currentEditingClassId = null;
+        currentEditingStudentId = null;
+    }
+
+    async function saveGrades() {
+        const rows = document.querySelectorAll('#subjectsAccordion tbody tr');
+        let payload = [];
+        const year = document.getElementById('filterYear').value || "2025-2026";
+
+        rows.forEach(row => {
+            const subjectId = parseInt(row.getAttribute('data-subject'));
+            const semester = parseInt(row.getAttribute('data-semester'));
+            
+            const getVal = (name) => {
+                let val = row.querySelector(`input[name="${name}"]`).value;
+                return val === '' ? null : parseFloat(val);
+            };
+
+            let gradeData = {
+                studentId: currentEditingStudentId,
+                subjectId: subjectId,
+                classId: currentEditingClassId,
+                academicYear: year,
+                semester: semester,
+                attendanceScore: getVal('attendanceScore'),
+                oralScore1: getVal('oralScore1'),
+                oralScore2: getVal('oralScore2'),
+                fifteenMinScore1: getVal('fifteenMinScore1'),
+                fifteenMinScore2: getVal('fifteenMinScore2'),
+                midtermScore: getVal('midtermScore'),
+                finalScore: getVal('finalScore')
+            };
+
+            // Only add to payload if at least one score is filled
+            if (gradeData.attendanceScore != null || gradeData.oralScore1 != null || gradeData.oralScore2 != null || 
+                gradeData.fifteenMinScore1 != null || gradeData.fifteenMinScore2 != null || 
+                gradeData.midtermScore != null || gradeData.finalScore != null) {
+                payload.push(gradeData);
+            }
+        });
+
+        if (payload.length === 0) {
+            alert("Vui lòng nhập ít nhất một điểm trước khi lưu!");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/web/grades/student/${currentEditingStudentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Lưu điểm thành công!");
+                await loadData();
+                closeEditScreen();
+            } else {
+                const msg = await res.text();
+                alert("Lỗi lưu điểm: " + msg);
+            }
+        } catch (e) {
+            alert("Lỗi kết nối");
+        }
+    }
+</script>

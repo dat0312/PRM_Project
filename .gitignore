@@ -1,0 +1,17 @@
+# Build outputs for .NET / C#
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+
+# Flutter / Dart
+**/.dart_tool/
+**/build/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# IDE / Editor
+.idea/
+.vscode/
+*.iml

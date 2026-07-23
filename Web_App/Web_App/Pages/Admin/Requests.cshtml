@@ -1,0 +1,677 @@
+@page
+@model Web_App.Pages.Admin.RequestsModel
+@{
+    ViewData["Title"] = "Quản lý Đơn từ";
+    Layout = "_Layout";
+    var currentUserIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0";
+    var currentUserId = int.Parse(currentUserIdStr);
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .page-title h1 {
+        font-size: 24px;
+        color: #1E1E1E;
+        margin: 0 0 8px 0;
+    }
+    .page-title p {
+        color: #666;
+        margin: 0;
+    }
+    .create-btn {
+        background-color: #A04100;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .tabs-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .tab-btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: 1px solid #E2E2E2;
+        background: white;
+        color: #333;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .tab-btn.active {
+        background-color: #A04100;
+        color: white;
+        border-color: #A04100;
+    }
+
+    .stats-row {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        flex: 1;
+        background: white;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        padding: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .stat-info p {
+        margin: 0;
+        font-size: 12px;
+        font-weight: bold;
+        color: #666;
+    }
+    .stat-info h2 {
+        margin: 8px 0;
+        font-size: 32px;
+        color: #1E1E1E;
+    }
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 28px;
+    }
+    .icon-blue { background: rgba(33, 150, 243, 0.1); color: #2196F3; }
+    .icon-orange { background: rgba(255, 152, 0, 0.1); color: #FF9800; }
+
+    .filters-section {
+        background: white;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+    .search-input {
+        flex: 3;
+        padding: 10px 16px 10px 40px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        outline: none;
+        box-sizing: border-box;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 12px center;
+    }
+    .filter-select {
+        flex: 2;
+        padding: 10px 16px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        outline: none;
+        background: white;
+    }
+    .reset-btn {
+        padding: 10px 24px;
+        border: 1px solid #D65B1A;
+        color: #D65B1A;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .data-table {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E2E2E2;
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th {
+        background: #F4F6F8;
+        padding: 16px 24px;
+        text-align: left;
+        font-size: 12px;
+        color: #666;
+        font-weight: bold;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .data-table td {
+        padding: 16px 24px;
+        border-bottom: 1px solid #E2E2E2;
+        color: #333;
+    }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 10px;
+        font-weight: bold;
+        display: inline-block;
+    }
+    .status-pending { background: #FFF7E3; color: #B78229; }
+    .status-approved { background: #E4F8EA; color: #287D3C; }
+    .status-rejected { background: #FEECEB; color: #DA1414; }
+    
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #666;
+        font-size: 18px;
+        margin: 0 4px;
+    }
+
+    /* Detail View / Compose View */
+    #detailView, #composeView {
+        display: none;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E2E2E2;
+        padding: 32px;
+        max-width: 800px;
+        margin: 0 auto;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+    .detail-content-box {
+        background: #F9F9FB;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        padding: 24px;
+        min-height: 200px;
+        margin-top: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    .modal-content {
+        background: white;
+        padding: 24px;
+        border-radius: 8px;
+        width: 400px;
+    }
+</style>
+
+<div id="mainContainer">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Quản lý Đơn từ</h1>
+            <p>Quản lý và phê duyệt các loại đơn từ của học sinh trong hệ thống.</p>
+        </div>
+        <button class="create-btn" onclick="openCompose()"><i class="fas fa-plus"></i> Tạo đơn mới</button>
+    </div>
+
+    <div class="tabs-row">
+        <button class="tab-btn active" id="tabReceived" onclick="switchTab('received')">Đơn nhận</button>
+        <button class="tab-btn" id="tabSent" onclick="switchTab('sent')">Đơn gửi</button>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-info">
+                <p>TỔNG SỐ ĐƠN</p>
+                <h2 id="statTotal">0</h2>
+                <span style="color: #4CAF50; font-size: 12px;">+0% so với tháng trước</span>
+            </div>
+            <div class="stat-icon icon-blue"><i class="fas fa-file-alt"></i></div>
+        </div>
+        <div class="stat-card" id="pendingStatCard">
+            <div class="stat-info">
+                <p>ĐANG CHỜ DUYỆT</p>
+                <h2 id="statPending">0</h2>
+                <span style="color: #4CAF50; font-size: 12px;">+0% so với tháng trước</span>
+            </div>
+            <div class="stat-icon icon-orange"><i class="fas fa-clock"></i></div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <input type="text" class="search-input" id="searchKeyword" placeholder="Tên học sinh hoặc Mã đơn..." oninput="applyFilters()">
+        <select class="filter-select" id="filterType" onchange="applyFilters()">
+            <option value="">Tất cả loại đơn</option>
+            <option value="CLB">CLB</option>
+            <option value="Lịch học">Lịch học</option>
+            <option value="Thông báo">Thông báo</option>
+            <option value="Khác">Khác</option>
+        </select>
+        <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="Chờ duyệt">Chờ duyệt</option>
+            <option value="Đã duyệt">Đã duyệt</option>
+            <option value="Từ chối">Từ chối</option>
+            <option value="Đã gửi">Đã gửi</option>
+        </select>
+        <button class="reset-btn" onclick="resetFilters()">Đặt lại</button>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>MÃ ĐƠN</th>
+                <th>TÊN HỌC SINH</th>
+                <th>LOẠI ĐƠN</th>
+                <th>NGÀY GỬI</th>
+                <th>TRẠNG THÁI</th>
+                <th style="text-align: center;">HÀNH ĐỘNG</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Rows injected by JS -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Compose View -->
+<div id="composeView" style="display:none; background: #F9F9FB; padding: 32px; max-width: 100%; border: none; box-shadow: none;">
+    <div style="display: flex; align-items: center; margin-bottom: 32px;">
+        <button class="action-btn" onclick="closeCompose()"><i class="fas fa-arrow-left"></i></button>
+        <h1 style="margin: 0 0 0 16px; font-size: 28px; color: #1E1E1E;">Tạo đơn mới</h1>
+    </div>
+
+    <div style="max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #E2E2E2; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <p style="font-size: 16px; font-weight: bold; margin-bottom: 16px;">Gửi đến</p>
+        <div style="display: flex; align-items: center; margin-bottom: 32px;">
+            <input type="checkbox" id="sendToStudents" style="accent-color: #D65B1A; width: 18px; height: 18px; margin-right: 8px;">
+            <label for="sendToStudents" style="font-size: 16px; margin-right: 48px; color: #333;">Tất cả Học sinh</label>
+            
+            <input type="checkbox" id="sendToTeachers" style="accent-color: #D65B1A; width: 18px; height: 18px; margin-right: 8px;">
+            <label for="sendToTeachers" style="font-size: 16px; color: #333;">Tất cả Giáo viên</label>
+        </div>
+
+        <p style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #333;">Tiêu đề</p>
+        <input type="text" id="composeTitle" placeholder="Nhập tiêu đề..." style="width: 100%; padding: 16px; border: 1px solid #E2E2E2; border-radius: 8px; margin-bottom: 32px; box-sizing: border-box; font-size: 16px;">
+
+        <p style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #333;">Nội dung</p>
+        <textarea id="composeContent" placeholder="Nhập nội dung chi tiết..." style="width: 100%; height: 300px; padding: 16px; border: 1px solid #E2E2E2; border-radius: 8px; margin-bottom: 40px; box-sizing: border-box; resize: vertical; font-family: inherit; font-size: 16px;"></textarea>
+
+        <div style="display: flex; justify-content: flex-end;">
+            <button onclick="closeCompose()" style="padding: 16px 32px; border: 1px solid #ccc; background: white; color: #666; font-weight: bold; border-radius: 8px; cursor: pointer; margin-right: 16px;">Hủy</button>
+            <button onclick="submitCompose()" id="btnSubmitCompose" style="padding: 16px 40px; border: none; background: #A04100; color: white; font-weight: bold; border-radius: 8px; cursor: pointer;">Gửi đi</button>
+        </div>
+    </div>
+</div>
+
+<!-- Detail View -->
+<div id="detailView">
+    <div class="detail-header">
+        <button class="action-btn" onclick="closeDetail()"><i class="fas fa-arrow-left"></i></button>
+        <h1 style="margin: 0;">Chi tiết đơn</h1>
+        <div id="detailActions">
+            <!-- Buttons injected by JS -->
+        </div>
+    </div>
+    <p style="color: #999; font-weight: bold; margin: 0 0 16px 0;" id="detailId">#DT-000</p>
+    <p style="font-size: 18px; font-weight: bold; margin: 0 0 8px 0;" id="detailSender">Người gửi: </p>
+    <p style="font-size: 20px; font-weight: bold; margin: 0 0 4px 0;" id="detailTitle">Tiêu đề: </p>
+    <p style="color: #999; font-size: 14px; margin: 0 0 24px 0;" id="detailDate">Ngày gửi: </p>
+    
+    <p style="font-weight: bold; margin: 0;">Nội dung:</p>
+    <div class="detail-content-box" id="detailContent">
+        <!-- Content injected by JS -->
+    </div>
+</div>
+
+<!-- Substitute Teacher Modal -->
+<div class="modal-overlay" id="substituteModal">
+    <div class="modal-content">
+        <h3 style="margin-top: 0;">Chọn Giáo viên dạy thay</h3>
+        <p>Vui lòng chọn giáo viên để dạy thay cho lịch học này.</p>
+        <select id="substituteSelect" style="width: 100%; padding: 8px; margin-bottom: 24px;">
+            <!-- Options injected by JS -->
+        </select>
+        <div style="text-align: right;">
+            <button class="tab-btn" style="padding: 8px 16px;" onclick="closeSubstituteModal()">Hủy</button>
+            <button class="create-btn" style="padding: 8px 16px; display:inline-flex; margin-left: 8px;" onclick="confirmSubstitute()">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const currentUserId = @currentUserId;
+    let allRequests = [];
+    let currentTab = 'received';
+    let currentDetailRequest = null;
+    let pendingSubstituteScheduleId = null;
+
+    window.onload = function() {
+        loadData();
+    };
+
+    async function loadData() {
+        try {
+            const res = await fetch(`/api/web/request/user/${currentUserId}?_t=${new Date().getTime()}`);
+            if (res.ok) {
+                allRequests = await res.json();
+                applyFilters();
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const openId = urlParams.get('openId');
+                if (openId) {
+                    openDetail(parseInt(openId));
+                }
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tabReceived').className = tab === 'received' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabSent').className = tab === 'sent' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('pendingStatCard').style.display = tab === 'received' ? 'flex' : 'none';
+        applyFilters();
+    }
+
+    function applyFilters() {
+        let activeRequests = allRequests.filter(r => {
+            let deletedIds = r.deletedByIds ? r.deletedByIds.split(',') : [];
+            return !deletedIds.includes(currentUserId.toString());
+        });
+
+        let tabList = activeRequests.filter(r => {
+            if (currentTab === 'received') return r.senderId !== currentUserId;
+            return r.senderId === currentUserId;
+        });
+
+        document.getElementById('statTotal').innerText = tabList.length;
+        document.getElementById('statPending').innerText = tabList.filter(r => r.status === 'Chờ duyệt').length;
+
+        const kw = document.getElementById('searchKeyword').value.toLowerCase();
+        const type = document.getElementById('filterType').value;
+        const status = document.getElementById('filterStatus').value;
+
+        let displayList = tabList.filter(r => {
+            let matchKw = r.senderName.toLowerCase().includes(kw) || r.id.toString().includes(kw);
+            let matchType = type === '' || r.category === type;
+            let matchStatus = status === '' || r.status === status;
+            return matchKw && matchType && matchStatus;
+        });
+
+        renderTable(displayList);
+    }
+
+    function resetFilters() {
+        document.getElementById('searchKeyword').value = '';
+        document.getElementById('filterType').value = '';
+        document.getElementById('filterStatus').value = '';
+        applyFilters();
+    }
+
+    function renderTable(list) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">Không tìm thấy đơn nào.</td></tr>';
+            return;
+        }
+
+        list.forEach(req => {
+            let badgeClass = 'status-pending';
+            if (req.status === 'Đã duyệt') badgeClass = 'status-approved';
+            else if (req.status === 'Từ chối') badgeClass = 'status-rejected';
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color: #D65B1A; font-weight: bold;">#DT-2024-${req.id.toString().padStart(3, '0')}</td>
+                <td style="font-weight: 500;">${req.senderName}</td>
+                <td>${req.category}</td>
+                <td>${req.date.split(' ')[0]}</td>
+                <td><span class="status-badge ${badgeClass}">${req.status.toUpperCase()}</span></td>
+                <td style="text-align: center;">
+                    <button class="action-btn" onclick="openDetail(${req.id})"><i class="fas fa-eye"></i></button>
+                    <button class="action-btn" onclick="hideRequest(${req.id})"><i class="fas fa-trash-alt"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function hideRequest(id) {
+        if (!confirm("Bạn có chắc chắn muốn xóa đơn này?")) return;
+        try {
+            const res = await fetch(`/api/web/request/${id}/hide?userId=${currentUserId}`, { method: 'DELETE' });
+            if (!res.ok) {
+                alert("Không thể xóa: " + await res.text());
+                return;
+            }
+            let req = allRequests.find(r => r.id === id);
+            if (req) {
+                if (!req.deletedByIds) req.deletedByIds = "";
+                req.deletedByIds += (req.deletedByIds ? "," : "") + currentUserId;
+            }
+            applyFilters();
+        } catch(e) {
+            alert("Lỗi kết nối");
+        }
+    }
+
+    function openDetail(id) {
+        currentDetailRequest = allRequests.find(r => r.id === id);
+        if (!currentDetailRequest) return;
+
+        document.getElementById('mainContainer').style.display = 'none';
+        document.getElementById('composeView').style.display = 'none';
+        document.getElementById('detailView').style.display = 'block';
+
+        let r = currentDetailRequest;
+        document.getElementById('detailId').innerText = `#DT-2024-${r.id.toString().padStart(3, '0')}`;
+        document.getElementById('detailSender').innerText = `Người gửi: ${r.senderName}`;
+        document.getElementById('detailTitle').innerText = `Tiêu đề: ${r.title}`;
+        document.getElementById('detailDate').innerText = `Ngày gửi: ${r.date}`;
+
+        let contentHtml = r.content;
+        try {
+            if (r.content.trim().startsWith('{')) {
+                let json = JSON.parse(r.content);
+                if (json.Type === 'MAKEUP') {
+                    contentHtml = `<p style="color: blue; font-weight: bold;">Đơn xin Dạy Bù</p>
+                                   <p>Mã lịch cũ: #${json.ScheduleId}</p>
+                                   <p style="color: green; font-weight: bold;">Lịch mới đề xuất: Tiết ${json.NewSlot} ngày ${json.NewDate}</p>
+                                   <p><b>Lý do:</b><br>${json.Reason}</p>`;
+                } else if (json.Type === 'LEAVE') {
+                    contentHtml = `<p style="color: red; font-weight: bold;">Đơn xin Nghỉ Dạy</p>
+                                   <p>Mã lịch xin nghỉ: #${json.ScheduleId}</p>
+                                   <p><b>Lý do:</b><br>${json.Reason}</p>`;
+                }
+            }
+        } catch(e) {}
+        document.getElementById('detailContent').innerHTML = contentHtml;
+
+        let actions = document.getElementById('detailActions');
+        actions.innerHTML = '';
+        if (currentTab === 'received' && r.status === 'Chờ duyệt') {
+            actions.innerHTML = `
+                <button class="reset-btn" style="padding: 8px 16px; color: red; border-color: red;" onclick="handleAction('reject')">Từ chối</button>
+                <button class="create-btn" style="display:inline-flex; padding: 8px 16px; margin-left: 8px; background: green;" onclick="handleAction('approve')">Duyệt</button>
+            `;
+        }
+    }
+
+    function closeDetail() {
+        currentDetailRequest = null;
+        document.getElementById('detailView').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+    }
+
+    async function handleAction(action) {
+        if (action === 'approve') {
+            try {
+                if (currentDetailRequest.content.trim().startsWith('{')) {
+                    let json = JSON.parse(currentDetailRequest.content);
+                    if (json.Type === 'LEAVE') {
+                        pendingSubstituteScheduleId = json.ScheduleId;
+                        await loadSubstitutes(json.ScheduleId);
+                        document.getElementById('substituteModal').style.display = 'flex';
+                        return; // Wait for modal
+                    }
+                }
+            } catch(e) {}
+        }
+
+        await submitAction(action, null);
+    }
+
+    async function loadSubstitutes(scheduleId) {
+        const select = document.getElementById('substituteSelect');
+        select.innerHTML = '<option value="">Đang tải...</option>';
+        try {
+            const res = await fetch(`/api/web/request/schedule/substitutes/${scheduleId}`);
+            if (res.ok) {
+                const teachers = await res.json();
+                select.innerHTML = '';
+                if (teachers.length === 0) {
+                    select.innerHTML = '<option value="">Không có giáo viên rảnh</option>';
+                } else {
+                    teachers.forEach(t => {
+                        select.innerHTML += `<option value="${t.id}">${t.fullName}</option>`;
+                    });
+                }
+            }
+        } catch(e) {}
+    }
+
+    function closeSubstituteModal() {
+        document.getElementById('substituteModal').style.display = 'none';
+        pendingSubstituteScheduleId = null;
+    }
+
+    async function confirmSubstitute() {
+        const val = document.getElementById('substituteSelect').value;
+        if (!val) {
+            alert("Vui lòng chọn một giáo viên."); return;
+        }
+        closeSubstituteModal();
+        await submitAction('approve', parseInt(val));
+    }
+
+    async function submitAction(action, substituteId) {
+        try {
+            let url = `/api/web/request/${currentDetailRequest.id}/${action}`;
+            if (substituteId) url += `?substituteTeacherId=${substituteId}`;
+            
+            const res = await fetch(url, { method: 'POST' });
+            if (res.ok) {
+                alert(action === 'approve' ? "Đã duyệt đơn!" : "Đã từ chối đơn!");
+                closeDetail();
+                loadData();
+            } else {
+                const msg = await res.text();
+                alert("Lỗi: " + msg);
+            }
+        } catch(e) {
+            alert("Lỗi kết nối.");
+        }
+    }
+
+    function openCompose() {
+        document.getElementById('composeTitle').value = '';
+        document.getElementById('composeContent').value = '';
+        document.getElementById('mainContainer').style.display = 'none';
+        document.getElementById('detailView').style.display = 'none';
+        document.getElementById('composeView').style.display = 'block';
+    }
+
+    function closeCompose() {
+        document.getElementById('composeView').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+    }
+
+    async function submitCompose() {
+        const title = document.getElementById('composeTitle').value.trim();
+        const content = document.getElementById('composeContent').value.trim();
+        const sendToStudents = document.getElementById('sendToStudents').checked;
+        const sendToTeachers = document.getElementById('sendToTeachers').checked;
+
+        if (!title || !content) {
+            alert("Vui lòng nhập đầy đủ Tiêu đề và Nội dung.");
+            return;
+        }
+
+        if (!sendToStudents && !sendToTeachers) {
+            alert("Vui lòng chọn ít nhất một nhóm người nhận.");
+            return;
+        }
+
+        let receiver = '';
+        if (sendToStudents && sendToTeachers) receiver = 'ALL';
+        else if (sendToStudents) receiver = 'STUDENTS';
+        else if (sendToTeachers) receiver = 'TEACHERS';
+
+        const payload = {
+            title: title,
+            content: content,
+            category: "Thông báo",
+            senderId: currentUserId,
+            receiverIds: receiver,
+            status: "Đã gửi"
+        };
+
+        const btn = document.getElementById('btnSubmitCompose');
+        btn.disabled = true;
+        btn.innerText = 'Đang gửi...';
+
+        try {
+            const res = await fetch('/api/web/request/compose', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                alert("Gửi thông báo thành công!");
+                closeCompose();
+                loadData();
+            } else {
+                alert("Lỗi khi gửi thông báo.");
+            }
+        } catch(e) {
+            alert("Lỗi kết nối.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Gửi đi';
+        }
+    }
+</script>

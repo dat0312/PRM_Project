@@ -1,0 +1,513 @@
+@page
+@model Web_App.Pages.Teacher.Requests.IndexModel
+@{
+    ViewData["Title"] = "Đơn từ";
+    Layout = "_Layout";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .page-title h1 {
+        font-size: 24px;
+        color: #1E1E1E;
+        margin: 0 0 8px 0;
+    }
+    .page-title p {
+        color: #666;
+        margin: 0;
+    }
+    .create-btn {
+        background-color: #F27024;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 6px rgba(242, 112, 36, 0.2);
+        transition: background-color 0.2s;
+    }
+    .create-btn:hover {
+        background-color: #D65B1A;
+    }
+    
+    .tabs-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .tab-btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: 1px solid #E2E2E2;
+        background: white;
+        color: #333;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tab-btn.active {
+        background-color: #F27024;
+        color: white;
+        border-color: #F27024;
+    }
+
+    .request-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .request-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        border: 1px solid #E2E2E2;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+    .request-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+    }
+    .req-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .req-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+    .req-status {
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .status-approved { background: rgba(76, 175, 80, 0.1); color: #4CAF50; }
+    .status-pending { background: rgba(255, 152, 0, 0.1); color: #FF9800; }
+    .status-rejected { background: rgba(244, 67, 54, 0.1); color: #F44336; }
+    .status-default { background: rgba(158, 158, 158, 0.1); color: #9E9E9E; }
+    
+    .req-subtext {
+        color: #666;
+        font-size: 13px;
+        margin: 0 0 16px 0;
+    }
+    .req-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #F0F0F0;
+        padding-top: 12px;
+    }
+    .req-date {
+        color: #888;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .req-link {
+        color: #2196F3;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 500px;
+        max-width: 90%;
+        padding: 24px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .modal-header h2 {
+        margin: 0;
+        font-size: 20px;
+        color: #F27024;
+    }
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #888;
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+        font-size: 14px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #E2E2E2;
+        border-radius: 8px;
+        box-sizing: border-box;
+        outline: none;
+        font-family: inherit;
+    }
+    .form-control:focus {
+        border-color: #F27024;
+    }
+    
+    .autocomplete-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #E2E2E2;
+        border-top: none;
+        max-height: 150px;
+        overflow-y: auto;
+        border-radius: 0 0 8px 8px;
+        display: none;
+    }
+    .autocomplete-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .autocomplete-item:hover {
+        background-color: #F9F9F9;
+    }
+
+    .btn-submit {
+        background-color: #F27024;
+        color: white;
+        border: none;
+        padding: 12px;
+        width: 100%;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+</style>
+
+<div class="page-header">
+    <div class="page-title">
+        <h1>Quản lý Đơn từ</h1>
+        <p>Xem, tạo mới và quản lý đơn xin nghỉ, dạy thay, tin nhắn</p>
+    </div>
+    <button class="create-btn" onclick="openCreateModal()">
+        <i class="fas fa-plus"></i> Tạo đơn mới
+    </button>
+</div>
+
+<div class="tabs-row">
+    <button class="tab-btn active" id="tabReceived" onclick="switchTab('received')">Đơn nhận</button>
+    <button class="tab-btn" id="tabSent" onclick="switchTab('sent')">Đơn gửi</button>
+</div>
+
+<div class="request-list" id="requestContainer">
+    <!-- Items will be generated by JS -->
+    <div style="text-align: center; color: #888; padding: 40px;">Đang tải dữ liệu...</div>
+</div>
+
+<!-- Modal for viewing detail (optional simplified view) -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="detailTitle">Chi tiết đơn</h2>
+            <button class="close-btn" onclick="closeDetailModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="margin-bottom:12px;"><strong>Người gửi:</strong> <span id="detailSender"></span></div>
+        <div style="margin-bottom:12px;"><strong>Ngày gửi:</strong> <span id="detailDate"></span></div>
+        <div style="margin-bottom:12px;"><strong>Trạng thái:</strong> <span id="detailStatus" class="req-status"></span></div>
+        <hr/>
+        <div style="white-space: pre-wrap; color: #444;" id="detailContent"></div>
+    </div>
+</div>
+
+<!-- Modal for Create Request -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Soạn tin nhắn / Đơn</h2>
+            <button class="close-btn" onclick="closeCreateModal()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="form-group">
+            <label>Người nhận (Email hoặc điền ALL/ADMIN):</label>
+            <input type="text" id="receiverSearch" class="form-control" placeholder="Nhập email người nhận (ít nhất 2 ký tự)..." autocomplete="off" oninput="onSearchInput()">
+            <ul class="autocomplete-list" id="autocompleteList"></ul>
+            <div id="selectedUserLabel" style="color: green; font-weight: bold; margin-top: 8px; display: none;"></div>
+            <input type="hidden" id="selectedUserId">
+        </div>
+        
+        <div class="form-group">
+            <label>Tiêu đề:</label>
+            <input type="text" id="reqTitle" class="form-control" placeholder="Nhập tiêu đề...">
+        </div>
+        
+        <div class="form-group">
+            <label>Nội dung:</label>
+            <textarea id="reqContent" class="form-control" rows="4" placeholder="Nhập nội dung..."></textarea>
+        </div>
+        
+        <button class="btn-submit" onclick="submitRequest()" id="btnSubmit">Gửi đơn</button>
+    </div>
+</div>
+
+<script>
+    const userId = @Model.UserId;
+    let allRequests = [];
+    let currentTab = 'received';
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadRequests();
+    });
+
+    async function loadRequests() {
+        try {
+            const res = await fetch(`/api/web/request/user/${userId}`);
+            if (res.ok) {
+                allRequests = await res.json();
+                renderRequests();
+            }
+        } catch(e) {
+            console.error("Error loading requests", e);
+            document.getElementById('requestContainer').innerHTML = `<div style="text-align:center; color:red;">Lỗi tải dữ liệu</div>`;
+        }
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tabReceived').classList.remove('active');
+        document.getElementById('tabSent').classList.remove('active');
+        
+        if (tab === 'received') document.getElementById('tabReceived').classList.add('active');
+        else document.getElementById('tabSent').classList.add('active');
+        
+        renderRequests();
+    }
+
+    function renderRequests() {
+        const container = document.getElementById('requestContainer');
+        container.innerHTML = '';
+        
+        let filtered = [];
+        if (currentTab === 'sent') {
+            filtered = allRequests.filter(r => r.senderId === userId);
+        } else {
+            // Received
+            filtered = allRequests.filter(r => 
+                r.senderId !== userId && 
+                (r.receiverIds === 'ALL' || (r.receiverIds && r.receiverIds.split(',').includes(userId.toString())))
+            );
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: #888; padding: 40px;">Không có đơn nào.</div>`;
+            return;
+        }
+
+        filtered.forEach(req => {
+            let statusClass = 'status-default';
+            if (req.status === 'Đã duyệt' || req.status === 'Đã nhận') statusClass = 'status-approved';
+            else if (req.status === 'Chờ duyệt' || req.status === 'Đang chờ') statusClass = 'status-pending';
+            else if (req.status === 'Từ chối') statusClass = 'status-rejected';
+
+            let subtext = currentTab === 'received' 
+                ? `Từ: ${req.senderName || 'Hệ thống'}`
+                : `Tới: ${req.receiverIds === 'ALL' ? 'Tất cả' : (req.receiverIds === 'ADMIN' ? 'Ban Quản Trị' : 'Một số người nhận')}`;
+
+            const card = document.createElement('div');
+            card.className = 'request-card';
+            card.onclick = () => openDetail(req, statusClass);
+            
+            card.innerHTML = `
+                <div class="req-header">
+                    <h3 class="req-title">${req.title}</h3>
+                    <span class="req-status ${statusClass}">${req.status}</span>
+                </div>
+                <p class="req-subtext">${subtext}</p>
+                <div class="req-footer">
+                    <div class="req-date"><i class="fas fa-calendar-alt"></i> ${req.date}</div>
+                    <div class="req-link">Xem chi tiết</div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function openDetail(req, statusClass) {
+        document.getElementById('detailTitle').innerText = req.title;
+        document.getElementById('detailSender').innerText = req.senderName || 'Hệ thống';
+        document.getElementById('detailDate').innerText = req.date;
+        document.getElementById('detailStatus').innerText = req.status;
+        document.getElementById('detailStatus').className = `req-status ${statusClass}`;
+        
+        let contentStr = req.content;
+        try {
+            // Attempt to parse JSON if it's a structured request (like LEAVE)
+            let parsed = JSON.parse(req.content);
+            contentStr = `Loại đơn: ${parsed.Type}\n`;
+            if (parsed.Reason) contentStr += `Lý do: ${parsed.Reason}\n`;
+            if (parsed.ScheduleId) contentStr += `Mã lịch học: ${parsed.ScheduleId}`;
+        } catch(e) {}
+        
+        document.getElementById('detailContent').innerText = contentStr;
+        document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').style.display = 'none';
+    }
+
+    // CREATE MODAL LOGIC
+    function openCreateModal() {
+        document.getElementById('createModal').style.display = 'flex';
+        document.getElementById('receiverSearch').value = '';
+        document.getElementById('reqTitle').value = '';
+        document.getElementById('reqContent').value = '';
+        document.getElementById('selectedUserId').value = '';
+        document.getElementById('selectedUserLabel').style.display = 'none';
+        document.getElementById('autocompleteList').style.display = 'none';
+    }
+
+    function closeCreateModal() {
+        document.getElementById('createModal').style.display = 'none';
+    }
+
+    let searchTimeout = null;
+    function onSearchInput() {
+        const val = document.getElementById('receiverSearch').value.trim();
+        const list = document.getElementById('autocompleteList');
+        
+        // Reset selected if typing again
+        document.getElementById('selectedUserId').value = '';
+        document.getElementById('selectedUserLabel').style.display = 'none';
+        
+        if (val === 'ALL' || val === 'ADMIN') {
+            document.getElementById('selectedUserId').value = val;
+            document.getElementById('selectedUserLabel').innerText = `Đã chọn: ${val}`;
+            document.getElementById('selectedUserLabel').style.display = 'block';
+            list.style.display = 'none';
+            return;
+        }
+        
+        if (val.length < 2) {
+            list.style.display = 'none';
+            return;
+        }
+
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/web/user/search-email?q=${encodeURIComponent(val)}`);
+                if (res.ok) {
+                    const users = await res.json();
+                    list.innerHTML = '';
+                    if (users.length > 0) {
+                        users.forEach(u => {
+                            const li = document.createElement('li');
+                            li.className = 'autocomplete-item';
+                            li.innerText = `${u.email} (${u.fullName})`;
+                            li.onclick = () => selectUser(u);
+                            list.appendChild(li);
+                        });
+                        list.style.display = 'block';
+                    } else {
+                        list.style.display = 'none';
+                    }
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }, 500);
+    }
+
+    function selectUser(u) {
+        document.getElementById('receiverSearch').value = u.email;
+        document.getElementById('selectedUserId').value = u.id;
+        document.getElementById('selectedUserLabel').innerText = `Đã chọn: ${u.fullName}`;
+        document.getElementById('selectedUserLabel').style.display = 'block';
+        document.getElementById('autocompleteList').style.display = 'none';
+    }
+
+    async function submitRequest() {
+        const receiver = document.getElementById('selectedUserId').value;
+        const title = document.getElementById('reqTitle').value.trim();
+        const content = document.getElementById('reqContent').value.trim();
+        
+        if (!receiver) {
+            alert('Vui lòng chọn người nhận hợp lệ!');
+            return;
+        }
+        if (!title || !content) {
+            alert('Vui lòng nhập đầy đủ tiêu đề và nội dung!');
+            return;
+        }
+        
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerText = 'Đang gửi...';
+
+        const payload = {
+            title: title,
+            content: content,
+            category: "Tin nhắn",
+            status: "Đã nhận",
+            senderId: userId,
+            receiverIds: receiver
+        };
+
+        try {
+            const res = await fetch('/api/web/request/compose', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (res.ok) {
+                alert('Gửi đơn thành công!');
+                closeCreateModal();
+                loadRequests(); // refresh
+            } else {
+                alert('Có lỗi xảy ra khi gửi đơn.');
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Lỗi kết nối.');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Gửi đơn';
+        }
+    }
+</script>

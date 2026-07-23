@@ -1,0 +1,28 @@
+name: myfschoolse1915
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  http: ^1.1.0
+  intl: ^0.20.3
+  table_calendar: ^3.2.0
+  signalr_netcore: ^1.4.4
+  file_picker: ^11.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/Screenshot 2026-06-04 164242.png

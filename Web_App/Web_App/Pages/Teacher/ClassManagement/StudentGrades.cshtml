@@ -1,0 +1,172 @@
+@page
+@model Web_App.Pages.Teacher.ClassManagement.StudentGradesModel
+@{
+    ViewData["Title"] = "Chi tiết điểm số";
+    Layout = "_Layout";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .back-btn {
+        background: none;
+        border: none;
+        color: #F27024;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+    }
+    .page-title h1 {
+        font-size: 24px;
+        color: #1E1E1E;
+        margin: 0 0 8px 0;
+    }
+    .page-title p {
+        color: #666;
+        margin: 0;
+    }
+    .data-table {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E2E2E2;
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+    }
+    .data-table th, .data-table td {
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .data-table th {
+        background: #F4F6F8;
+        font-weight: bold;
+        color: #666;
+    }
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+</style>
+
+<div class="page-header">
+    <button class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+    <div class="page-title">
+        <h1>Chi tiết điểm số: <span style="color:#F27024;">@Model.StudentName</span></h1>
+        <p>Bảng điểm tổng hợp tất cả các môn của học sinh</p>
+    </div>
+    <div style="margin-left: auto;">
+        <label style="font-weight: bold; margin-right: 8px;">Học kỳ:</label>
+        <select id="semesterFilter" class="form-control" style="width: auto; display: inline-block; padding: 8px; border-radius: 6px; border: 1px solid #CCC;" onchange="renderGrades()">
+            <option value="1" selected="@(Model.Semester != "2")">Học kỳ 1</option>
+            <option value="2" selected="@(Model.Semester == "2")">Học kỳ 2</option>
+        </select>
+    </div>
+</div>
+
+<div id="loading" style="text-align:center; padding: 40px; color: #888;">Đang tải dữ liệu...</div>
+
+<div id="mainContentView" style="display:none;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Môn học</th>
+                <th>Chuyên cần (10%)</th>
+                <th>Miệng 1</th>
+                <th>Miệng 2</th>
+                <th>15 Phút 1</th>
+                <th>15 Phút 2</th>
+                <th>Giữa kỳ (30%)</th>
+                <th>Cuối kỳ (40%)</th>
+                <th>TBM</th>
+            </tr>
+        </thead>
+        <tbody id="gradesDetailTableBody">
+            <!-- Render by JS -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    let allStudentGrades = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const studentId = @Model.StudentId;
+        
+        try {
+            // First fetch the homeroom class id
+            const resClass = await fetch('/api/web/class/my-classes');
+            if (resClass.ok) {
+                const classes = await resClass.json();
+                const homeroomClass = classes.find(c => c.isHomeroom === true);
+                if (homeroomClass) {
+                    const classId = homeroomClass.id;
+                    
+                    // Fetch grades
+                    const resGrades = await fetch(`/api/web/grades/class/${classId}`);
+                    if (resGrades.ok) {
+                        const allGrades = await resGrades.json();
+                        allStudentGrades = allGrades.filter(g => g.studentId === studentId);
+                        
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('mainContentView').style.display = 'block';
+                        
+                        renderGrades();
+                    }
+                }
+            }
+        } catch(e) {
+            console.error(e);
+            document.getElementById('loading').innerHTML = `<span style="color:red;">Lỗi tải dữ liệu.</span>`;
+        }
+    });
+
+    function renderGrades() {
+        const semesterVal = document.getElementById('semesterFilter').value;
+        let grades = allStudentGrades;
+        if (semesterVal) {
+            grades = allStudentGrades.filter(g => g.semester == semesterVal);
+        }
+        
+        const tbody = document.getElementById('gradesDetailTableBody');
+        tbody.innerHTML = '';
+        
+        if(grades.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#888;">Không có dữ liệu điểm số</td></tr>`;
+        } else {
+            grades.forEach(g => {
+                const att = g.attendanceScore || 0;
+                const o1 = g.oralScore1 || 0;
+                const o2 = g.oralScore2 || 0;
+                const f1 = g.fifteenMinScore1 || 0;
+                const f2 = g.fifteenMinScore2 || 0;
+                const mid = g.midtermScore || 0;
+                const fin = g.finalScore || 0;
+                
+                const subjAvg = (att * 0.1) + (((o1+o2+f1+f2)/4) * 0.2) + (mid * 0.3) + (fin * 0.4);
+
+                let o1Str = g.oralScore1 !== null ? g.oralScore1 : '-';
+                let o2Str = g.oralScore2 !== null ? g.oralScore2 : '-';
+                let f1Str = g.fifteenMinScore1 !== null ? g.fifteenMinScore1 : '-';
+                let f2Str = g.fifteenMinScore2 !== null ? g.fifteenMinScore2 : '-';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight:bold;">${g.subjectName}</td>
+                        <td>${att}</td>
+                        <td>${o1Str}</td>
+                        <td>${o2Str}</td>
+                        <td>${f1Str}</td>
+                        <td>${f2Str}</td>
+                        <td>${mid}</td>
+                        <td>${fin}</td>
+                        <td style="font-weight:bold; color:#F27024;">${subjAvg.toFixed(1)}</td>
+                    </tr>
+                `;
+            });
+        }
+    }
+</script>

@@ -1,0 +1,419 @@
+@page "{id?}"
+@model Web_App.Pages.Admin.UserFormModel
+@{
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+    }
+    .page-subtitle {
+        color: #888;
+        font-size: 14px;
+        margin: 0;
+    }
+    .btn-back {
+        background-color: #EEE;
+        color: #333;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 4px;
+        font-weight: bold;
+        font-size: 13px;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #CCC;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .form-group input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        padding: 0;
+        cursor: pointer;
+    }
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #CCC;
+        padding: 12px;
+        border-radius: 4px;
+        background: #F9F9F9;
+    }
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .checkbox-item label {
+        display: inline;
+        font-weight: normal;
+        margin: 0;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .btn-save {
+        background-color: #A04100;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 16px;
+    }
+    .btn-save:hover {
+        background-color: #8A3800;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title" id="pageTitle">Thêm người dùng</h1>
+        <p class="page-subtitle">Nhập thông tin chi tiết của người dùng.</p>
+    </div>
+    <a href="/Admin/Users" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+</div>
+
+<div class="form-container">
+    <form id="userForm">
+        <input type="hidden" id="userId" value="@RouteData.Values["id"]">
+        
+        <div class="form-group" id="codeGroup" style="display:none;">
+            <label>Mã số (ID)</label>
+            <input type="text" id="userCode" disabled style="background:#EEE;">
+        </div>
+
+        <div class="form-group">
+            <label>Họ và tên</label>
+            <input type="text" id="userName" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Số điện thoại</label>
+            <input type="text" id="userPhone" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="userEmail" required>
+        </div>
+
+        <div class="form-group">
+            <label>Chức vụ</label>
+            <select id="userRole" onchange="toggleRoleFields()" required>
+                <option value="Student">Học sinh</option>
+                <option value="Teacher">Giáo viên</option>
+            </select>
+        </div>
+
+        <!-- Teacher Only Fields -->
+        <div id="teacherFieldsTop" style="display:none;">
+            <div class="form-group">
+                <label>Nhóm môn</label>
+                <select id="userSubjectGroup" onchange="renderSubjectCheckboxes()">
+                    <option value="Bắt buộc">Bắt buộc</option>
+                    <option value="Tự nhiên">Tự nhiên</option>
+                    <option value="Xã hội">Xã hội</option>
+                </select>
+            </div>
+            <div class="form-group" id="subjectCheckboxesGroup">
+                <label>Môn giảng dạy:</label>
+                <div id="subjectCheckboxes" class="checkbox-grid"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label id="lblCohort">Khóa (Nhập số, vd: 4)</label>
+            <div style="display:flex; align-items:center;">
+                <span style="padding:8px; border:1px solid #CCC; background:#EEE; border-right:none; border-radius:4px 0 0 4px;">K</span>
+                <input type="number" id="userCohort" style="border-radius:0 4px 4px 0;" oninput="filterFormClasses()">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label id="lblGrade">Khối</label>
+            <select id="userGrade" onchange="filterFormClasses()">
+                <option value="">Không chọn</option>
+                <option value="Khối 10">Khối 10</option>
+                <option value="Khối 11">Khối 11</option>
+                <option value="Khối 12">Khối 12</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lblClass">Lớp học</label>
+            <select id="userClassId" required>
+                <option value="">Vui lòng chọn lớp học</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn-save">Lưu người dùng</button>
+    </form>
+</div>
+
+<script>
+    let allClasses = [];
+    let allSubjects = [];
+    let selectedSubjectIds = [];
+    let isEditing = false;
+    let currentUser = null;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        const userId = document.getElementById("userId").value;
+        if (userId) {
+            isEditing = true;
+            document.getElementById("pageTitle").innerText = "Sửa người dùng";
+        }
+
+        await loadDependencies();
+
+        if (isEditing) {
+            await loadUser(userId);
+        } else {
+            toggleRoleFields();
+        }
+
+        document.getElementById("userForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await saveUser();
+        });
+    });
+
+    async function loadDependencies() {
+        try {
+            const [classesRes, subjectsRes] = await Promise.all([
+                fetch('/api/web/user/classes'),
+                fetch('/api/web/user/subjects')
+            ]);
+            allClasses = await classesRes.json();
+            allSubjects = await subjectsRes.json();
+        } catch (e) {
+            alert("Lỗi tải danh sách môn/lớp: " + e.message);
+        }
+    }
+
+    async function loadUser(id) {
+        try {
+            const res = await fetch('/api/web/user/users');
+            const users = await res.json();
+            const user = users.find(u => u.id == id);
+            
+            if (user) {
+                currentUser = user;
+                document.getElementById('codeGroup').style.display = 'block';
+                document.getElementById('userCode').value = user.code || user.id;
+                document.getElementById('userName').value = user.name || '';
+                document.getElementById('userPhone').value = user.phoneNumber || '';
+                document.getElementById('userEmail').value = user.email || '';
+                
+                document.getElementById('userRole').value = user.roles && user.roles.includes('Teacher') ? 'Teacher' : 'Student';
+                
+                document.getElementById('userCohort').value = (user.cohort || '').replace(/\D/g, '');
+                document.getElementById('userGrade').value = user.grade === '-' ? '' : (user.grade || '');
+                
+                if (user.roles && user.roles.includes('Teacher')) {
+                    document.getElementById('userSubjectGroup').value = user.subjectGroup || 'Bắt buộc';
+                    selectedSubjectIds = user.subjectIds || [];
+                }
+                
+                toggleRoleFields();
+                
+                if (user.classId) {
+                    document.getElementById('userClassId').value = user.classId;
+                }
+            } else {
+                alert("Không tìm thấy người dùng!");
+                window.location.href = "/Admin/Users";
+            }
+        } catch (e) {
+            alert("Lỗi tải thông tin người dùng: " + e.message);
+        }
+    }
+
+    function toggleRoleFields() {
+        const role = document.getElementById('userRole').value;
+        const isTeacher = role === 'Teacher';
+        
+        document.getElementById('teacherFieldsTop').style.display = isTeacher ? 'block' : 'none';
+        
+        document.getElementById('lblCohort').innerText = isTeacher ? 'Khóa (Mặc định khóa mới nhất)' : 'Khóa (Nhập số, vd: 4)';
+        document.getElementById('lblGrade').innerText = isTeacher ? 'Khối (Tùy chọn)' : 'Khối';
+        document.getElementById('lblClass').innerText = isTeacher ? 'Lớp chủ nhiệm (Tùy chọn)' : 'Lớp học';
+        
+        if (isTeacher) {
+            // Lấy khóa mới nhất
+            const cohortsNum = allClasses.map(c => parseInt((c.cohort||'').replace(/\D/g,''))).filter(n => !isNaN(n));
+            const latest = cohortsNum.length > 0 ? Math.max(...cohortsNum) : '';
+            if (!isEditing || (currentUser && currentUser.cohort === '-')) {
+                document.getElementById('userCohort').value = latest;
+            }
+            document.getElementById('userCohort').disabled = true;
+            document.getElementById('userClassId').required = false;
+            document.getElementById('userGrade').required = false;
+        } else {
+            document.getElementById('userCohort').disabled = false;
+            document.getElementById('userClassId').required = true;
+            document.getElementById('userGrade').required = true;
+        }
+
+        renderSubjectCheckboxes();
+        filterFormClasses();
+    }
+
+    function renderSubjectCheckboxes() {
+        const role = document.getElementById('userRole').value;
+        if (role !== 'Teacher') return;
+        
+        const group = document.getElementById('userSubjectGroup').value;
+        let validSubjects = [];
+        
+        if (group === 'Bắt buộc') {
+            validSubjects = allSubjects.filter(s => s.group === 'Bắt buộc');
+        } else if (group === 'Tự nhiên') {
+            validSubjects = allSubjects.filter(s => s.group && s.group.includes('Tự nhiên'));
+        } else if (group === 'Xã hội') {
+            validSubjects = allSubjects.filter(s => s.group && s.group.includes('Xã hội'));
+        }
+
+        const container = document.getElementById('subjectCheckboxes');
+        container.innerHTML = validSubjects.map(s => {
+            const isChecked = selectedSubjectIds.includes(s.subjectId) ? 'checked' : '';
+            return `
+                <div class="checkbox-item">
+                    <input type="checkbox" id="subj_${s.subjectId}" value="${s.subjectId}" onchange="toggleSubject(this.value, this.checked)" ${isChecked}>
+                    <label for="subj_${s.subjectId}">${s.name}</label>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleSubject(id, isChecked) {
+        id = parseInt(id);
+        if (isChecked) {
+            if (!selectedSubjectIds.includes(id)) selectedSubjectIds.push(id);
+        } else {
+            selectedSubjectIds = selectedSubjectIds.filter(x => x !== id);
+        }
+    }
+
+    function filterFormClasses() {
+        const cohortVal = document.getElementById('userCohort').value.trim();
+        const gradeVal = document.getElementById('userGrade').value;
+        const role = document.getElementById('userRole').value;
+        
+        const effectiveCohort = cohortVal ? `K${cohortVal}` : '';
+
+        const available = allClasses.filter(c => {
+            const matchCohort = !effectiveCohort || c.cohort === effectiveCohort;
+            const matchGrade = !gradeVal || c.grade.toString() === gradeVal.replace('Khối ', '');
+            
+            // Lọc ra các lớp chưa có GVCN khác nếu là Teacher
+            let matchTeacher = true;
+            if (role === 'Teacher') {
+                if (c.homeroomTeacherId && currentUser && c.homeroomTeacherId !== currentUser.id) {
+                    matchTeacher = false;
+                } else if (c.homeroomTeacherId && !currentUser) {
+                    matchTeacher = false;
+                }
+            }
+
+            return matchCohort && matchGrade && matchTeacher;
+        });
+
+        const select = document.getElementById('userClassId');
+        const currentVal = select.value;
+        
+        select.innerHTML = '<option value="">Khong chọn</option>';
+        available.forEach(c => {
+            select.innerHTML += `<option value="${c.classId}">${c.className}</option>`;
+        });
+        
+        // Cố gắng giữ lại classId đã chọn nếu nó vẫn còn trong danh sách
+        if (available.some(c => c.classId == currentVal)) {
+            select.value = currentVal;
+        } else if (currentUser && currentUser.classId && available.some(c => c.classId == currentUser.classId)) {
+            select.value = currentUser.classId;
+        } else {
+            select.value = "";
+        }
+    }
+
+    async function saveUser() {
+        const id = document.getElementById('userId').value;
+        const role = document.getElementById('userRole').value;
+        
+        if (role === 'Teacher') {
+            const group = document.getElementById('userSubjectGroup').value;
+            if (!group) return alert("Vui lòng chọn nhóm môn.");
+            if (selectedSubjectIds.length === 0) return alert("Vui lòng chọn ít nhất 1 môn giảng dạy.");
+        }
+
+        const payload = {
+            FullName: document.getElementById('userName').value,
+            PhoneNumber: document.getElementById('userPhone').value,
+            Email: document.getElementById('userEmail').value,
+            Role: role,
+            ClassId: document.getElementById('userClassId').value ? parseInt(document.getElementById('userClassId').value) : null,
+            SubjectGroup: role === 'Teacher' ? document.getElementById('userSubjectGroup').value : null,
+            SubjectIds: role === 'Teacher' ? selectedSubjectIds : []
+        };
+
+        const url = id ? `/api/web/user/edit/${id}` : `/api/web/user/add`;
+        const method = id ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (res.ok) {
+                alert("Lưu thành công!");
+                window.location.href = "/Admin/Users";
+            } else {
+                const err = await res.json();
+                alert(err.message || "Lỗi khi lưu");
+            }
+        } catch (e) {
+            alert("Lỗi: " + e.message);
+        }
+    }
+</script>

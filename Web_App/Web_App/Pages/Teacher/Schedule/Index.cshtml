@@ -1,0 +1,312 @@
+@page
+@model Web_App.Pages.Teacher.Schedule.IndexModel
+@{
+    ViewData["Title"] = "Lịch dạy";
+    ViewData["ActiveMenu"] = "Schedule";
+    var timeSlots = new[] { "07:30 - 08:15", "08:25 - 09:10", "09:20 - 10:05", "10:15 - 11:00", "12:50 - 13:35", "13:45 - 14:30", "14:40 - 15:25", "15:35 - 16:20" };
+    var days = new[] { "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "CN" };
+    int totalSessions = Model.Schedules.Count;
+}
+
+<div class="container-fluid py-4" style="background-color: #F4F6F8; min-height: 100vh;">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1" style="color: #A04100;">Lịch Dạy Của Bạn</h3>
+            <span class="text-muted" style="font-size: 14px;">Quản lý lịch giảng dạy cá nhân</span>
+        </div>
+        <div>
+            <a href="?RequestDate=@Model.SelectedDate.ToString("yyyy-MM-dd")" class="btn btn-light border"><i class="fa-solid fa-refresh"></i></a>
+        </div>
+    </div>
+
+    <!-- Stats Card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body d-flex align-items-center p-3">
+                    <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 48px; height: 48px; background-color: #FFFFDBCC;">
+                        <i class="fa-solid fa-book" style="color: #A04100; font-size: 20px;"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="text-muted fw-bold" style="font-size: 10px; text-transform: uppercase;">Tổng tiết học tuần này</div>
+                        <div class="d-flex align-items-baseline">
+                            <h3 class="fw-bold mb-0 me-2">@totalSessions</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4" style="border: 1px solid #E2E2E2 !important;">
+        <div class="card-body p-0">
+            <!-- Controls -->
+            <div class="d-flex justify-content-center align-items-center p-3 border-bottom">
+                <a href="?RequestDate=@Model.SelectedDate.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-link text-dark"><i class="fa-solid fa-chevron-left"></i></a>
+                
+                <h5 class="fw-bold mx-4 mb-0">
+                    @Model.StartOfWeek.ToString("dd/MM/yyyy") - @Model.EndOfWeek.ToString("dd/MM/yyyy")
+                </h5>
+                
+                <a href="?RequestDate=@Model.SelectedDate.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-link text-dark"><i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0 text-center align-middle" style="table-layout: fixed; min-width: 1000px;">
+                    <thead>
+                        <tr style="height: 50px; background-color: #f8f9fa;">
+                            <th style="width: 50px; border-right: none;"></th>
+                            <th style="width: 100px; color: grey;">Thời gian</th>
+                            @for (int i = 0; i < 7; i++)
+                            {
+                                var colDate = Model.WeekDates[i];
+                                <th>
+                                    <div class="fw-bold">@days[i]</div>
+                                    <div class="text-muted" style="font-size: 12px; font-weight: normal;">@colDate.ToString("dd/MM")</div>
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int slotIndex = 0; slotIndex < 8; slotIndex++)
+                        {
+                            var rawSlot = slotIndex + 1;
+                            <tr style="height: 80px;">
+                                @if (slotIndex == 0)
+                                {
+                                    <td rowspan="4" style="background-color: #fff3cd; width: 50px; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); font-weight: bold; letter-spacing: 2px;">SÁNG</td>
+                                }
+                                else if (slotIndex == 4)
+                                {
+                                    <td rowspan="4" style="background-color: #cce5ff; width: 50px; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); font-weight: bold; letter-spacing: 2px;">CHIỀU</td>
+                                }
+
+                                <td style="font-size: 12px; font-weight: bold;">
+                                    Tiết @rawSlot<br/>
+                                    <span class="text-muted fw-normal">@timeSlots[slotIndex]</span>
+                                </td>
+
+                                @for (int dayIndex = 0; dayIndex < 7; dayIndex++)
+                                {
+                                    var colDate = Model.WeekDates[dayIndex];
+                                    var schedule = Model.Schedules.FirstOrDefault(s => s.Date.Date == colDate.Date && s.RawSlot == rawSlot);
+
+                                    <td class="p-1">
+                                        @if (schedule != null)
+                                        {
+                                            <div class="p-1 h-100 rounded" style="background-color: white; border: 1px solid #dee2e6; cursor: pointer; text-align: left; overflow: hidden; display: flex; flex-direction: column; justify-content: center;"
+                                                 onclick="showOptionsModal(@schedule.Id, @schedule.ClassId, '@schedule.SubjectName', '@schedule.ClassName', '@schedule.Room')">
+                                                <div class="fw-bold text-truncate" style="font-size: 12px;">@schedule.SubjectName</div>
+                                                <div class="text-primary text-truncate" style="font-size: 10px;">Lớp: @schedule.ClassName</div>
+                                                <div class="text-muted text-truncate" style="font-size: 10px;">P.@schedule.Room</div>
+                                            </div>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests Section -->
+    <h5 class="fw-bold mb-3" style="color: #A04100;">Yêu cầu báo nghỉ / đổi tiết</h5>
+    <div class="card border-0 shadow-sm rounded-3" style="border: 1px solid #E2E2E2 !important;">
+        @if (Model.Requests.Count == 0)
+        {
+            <div class="card-body text-center p-5 text-muted">
+                Không có yêu cầu nào đang chờ duyệt.
+            </div>
+        }
+        else
+        {
+            <ul class="list-group list-group-flush rounded-3">
+                @foreach (var r in Model.Requests)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px; background-color: #ffecd9; color: #ff9800;">
+                                <span class="fw-bold">@((r.Teacher?.FullName ?? "?")[0])</span>
+                            </div>
+                            <div>
+                                <div class="fw-bold">@(r.RequestType == "Leave" ? "Báo nghỉ" : "Dạy bù") (Đang chờ duyệt)</div>
+                                <div class="text-muted" style="font-size: 13px;">Lý do: @r.Reason</div>
+                                @if (r.RequestType == "Makeup" && r.MakeUpDate.HasValue && r.MakeUpSlot.HasValue)
+                                {
+                                    <div class="text-success fw-bold" style="font-size: 13px;">Đề xuất dạy bù: Tiết @r.MakeUpSlot ngày @r.MakeUpDate.Value.ToString("dd/MM/yyyy")</div>
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+<!-- Options Modal -->
+<div class="modal fade" id="optionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="optionsModalTitle">Tùy chọn cho tiết học</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="optionsModalContent" class="mb-3"></div>
+                <p>Bạn muốn xin nghỉ hay dạy bù tiết học này?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="openLeaveModal()">Xin nghỉ</button>
+                <button type="button" class="btn btn-primary" onclick="openMakeupModal()">Dạy bù</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Modal -->
+<div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="post" asp-page-handler="Leave" class="modal-content">
+            <input type="hidden" name="RequestDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+            <input type="hidden" id="leaveScheduleId" name="RequestScheduleId" />
+            <input type="hidden" id="leaveClassId" name="RequestClassId" />
+            
+            <div class="modal-header">
+                <h5 class="modal-title">Đơn xin báo nghỉ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Lý do nghỉ <span class="text-danger">*</span></label>
+                    <textarea name="RequestReason" class="form-control" rows="3" required placeholder="Nhập lý do..."></textarea>
+                </div>
+                <div class="alert alert-warning" style="font-size: 13px;">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i> Lưu ý: Đơn xin nghỉ cần được Admin phê duyệt.
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Makeup Modal -->
+<div class="modal fade" id="makeupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="post" asp-page-handler="Makeup" class="modal-content">
+            <input type="hidden" name="RequestDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+            <input type="hidden" id="makeupScheduleId" name="RequestScheduleId" />
+            <input type="hidden" id="makeupClassId" name="RequestClassId" />
+            
+            <div class="modal-header">
+                <h5 class="modal-title">Đơn xin dạy bù</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Lý do dạy bù <span class="text-danger">*</span></label>
+                    <textarea name="RequestReason" class="form-control" rows="2" required placeholder="Nhập lý do..."></textarea>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Ngày dạy bù <span class="text-danger">*</span></label>
+                        <input type="date" name="MakeUpDate" id="makeUpDateInput" class="form-control" required onchange="fetchOccupiedSlots()" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Tiết (Ca) <span class="text-danger">*</span></label>
+                        <select name="MakeUpSlot" id="makeUpSlotSelect" class="form-select" required>
+                            <option value="">-- Chọn tiết --</option>
+                            @for(int i=1; i<=8; i++) {
+                                <option value="@i">Tiết @i</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="alert alert-warning" style="font-size: 13px;">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i> Lưu ý: Đơn dạy bù cần được Admin phê duyệt.
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentScheduleId = 0;
+        let currentClassId = 0;
+        let optionsModal = null;
+        let leaveModal = null;
+        let makeupModal = null;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            optionsModal = new bootstrap.Modal(document.getElementById('optionsModal'));
+            leaveModal = new bootstrap.Modal(document.getElementById('leaveModal'));
+            makeupModal = new bootstrap.Modal(document.getElementById('makeupModal'));
+        });
+
+        function showOptionsModal(id, classId, subjectName, className, room) {
+            currentScheduleId = id;
+            currentClassId = classId;
+            document.getElementById('optionsModalTitle').innerText = 'Tùy chọn cho tiết học: ' + subjectName;
+            document.getElementById('optionsModalContent').innerHTML = 
+                '<strong>Lớp:</strong> ' + className + '<br/><strong>Phòng:</strong> ' + room;
+            optionsModal.show();
+        }
+
+        function openLeaveModal() {
+            optionsModal.hide();
+            document.getElementById('leaveScheduleId').value = currentScheduleId;
+            document.getElementById('leaveClassId').value = currentClassId;
+            leaveModal.show();
+        }
+
+        function openMakeupModal() {
+            optionsModal.hide();
+            document.getElementById('makeupScheduleId').value = currentScheduleId;
+            document.getElementById('makeupClassId').value = currentClassId;
+            document.getElementById('makeUpDateInput').value = '';
+            document.getElementById('makeUpSlotSelect').innerHTML = '<option value="">-- Chọn tiết --</option>';
+            for(let i=1; i<=8; i++) {
+                document.getElementById('makeUpSlotSelect').innerHTML += `<option value="${i}">Tiết ${i}</option>`;
+            }
+            makeupModal.show();
+        }
+
+        async function fetchOccupiedSlots() {
+            const date = document.getElementById('makeUpDateInput').value;
+            if (!date || !currentClassId) return;
+
+            try {
+                const response = await fetch(`?handler=OccupiedSlots&date=${date}&classId=${currentClassId}`);
+                if (response.ok) {
+                    const occupied = await response.json();
+                    
+                    const select = document.getElementById('makeUpSlotSelect');
+                    select.innerHTML = '<option value="">-- Chọn tiết --</option>';
+                    for (let i = 1; i <= 8; i++) {
+                        if (occupied.includes(i)) continue;
+                        select.innerHTML += `<option value="${i}">Tiết ${i}</option>`;
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+}

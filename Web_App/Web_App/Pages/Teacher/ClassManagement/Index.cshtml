@@ -1,0 +1,402 @@
+@page
+@model Web_App.Pages.Teacher.ClassManagement.IndexModel
+@{
+    ViewData["Title"] = "Quản lý lớp";
+    Layout = "_Layout";
+}
+
+<style>
+    .page-header {
+        margin-bottom: 24px;
+    }
+    .page-title h1 {
+        font-size: 24px;
+        color: #1E1E1E;
+        margin: 0 0 8px 0;
+    }
+    .page-title p {
+        color: #666;
+        margin: 0;
+    }
+
+    .no-class-msg {
+        background: white;
+        border: 1px solid #E2E2E2;
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        color: #666;
+        font-size: 18px;
+        margin-top: 24px;
+    }
+
+    .tabs-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .tab-btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: 1px solid #E2E2E2;
+        background: white;
+        color: #333;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tab-btn.active {
+        background-color: #F27024;
+        color: white;
+        border-color: #F27024;
+    }
+
+    .data-table {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E2E2E2;
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+    }
+    .data-table th, .data-table td {
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid #E2E2E2;
+    }
+    .data-table th {
+        background: #F4F6F8;
+        font-weight: bold;
+        color: #666;
+    }
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .honor-gioi { color: #4CAF50; font-weight: bold; }
+    .honor-kha { color: #2196F3; font-weight: bold; }
+    .honor-tb { color: #FF9800; font-weight: bold; }
+    .honor-yeu { color: #F44336; font-weight: bold; }
+
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: 80px repeat(7, 1fr);
+        gap: 1px;
+        background-color: #E2E2E2;
+        border: 1px solid #E2E2E2;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .schedule-cell {
+        background-color: white;
+        padding: 12px 8px;
+        text-align: center;
+        font-size: 13px;
+    }
+    .schedule-header {
+        background-color: #F4F6F8;
+        font-weight: bold;
+        color: #333;
+    }
+    .slot-label {
+        font-weight: bold;
+        color: #F27024;
+    }
+    .schedule-item {
+        background-color: rgba(242, 112, 36, 0.1);
+        border-left: 3px solid #F27024;
+        border-radius: 4px;
+        padding: 8px;
+        margin: 4px 0;
+        text-align: left;
+        font-size: 12px;
+    }
+    .schedule-item strong {
+        display: block;
+        color: #F27024;
+        font-size: 14px;
+    }
+</style>
+
+<div class="page-header">
+    <div class="page-title">
+        <h1>Quản lý lớp chủ nhiệm <span id="lblClassName" style="color:#F27024;"></span></h1>
+        <p>Xem thông tin thời khóa biểu và điểm số tổng hợp của lớp</p>
+    </div>
+</div>
+
+<div id="loading" style="text-align:center; padding: 40px; color: #888;">Đang tải dữ liệu...</div>
+
+<div id="noClassView" class="no-class-msg" style="display:none;">
+    <i class="fas fa-users-slash" style="font-size: 48px; color: #CCC; margin-bottom: 16px;"></i><br/>
+    Bạn không chủ nhiệm lớp nào.
+</div>
+
+<div id="mainContentView" style="display:none;">
+    <div class="tabs-row">
+        <button class="tab-btn active" id="tabSchedule" onclick="switchTab('schedule')">Lịch học</button>
+        <button class="tab-btn" id="tabGrades" onclick="switchTab('grades')">Điểm số & Danh hiệu</button>
+    </div>
+
+    <!-- TAB LỊCH HỌC -->
+    <div id="viewSchedule">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 24px;">
+            <button style="background: none; border: none; font-size: 20px; font-weight: bold; cursor: pointer; color: #1E1E1E;" onclick="changeWeek(-1)">&lt;</button>
+            <div style="position: relative; display: inline-block;">
+                <span id="weekLabel" style="font-size: 18px; font-weight: bold; color: #1E1E1E; cursor: pointer;" onclick="document.getElementById('scheduleDate').showPicker()"></span>
+                <input type="date" id="scheduleDate" style="position: absolute; opacity: 0; width: 0; height: 0; top: 0; left: 0;" onchange="loadSchedule()">
+            </div>
+            <button style="background: none; border: none; font-size: 20px; font-weight: bold; cursor: pointer; color: #1E1E1E;" onclick="changeWeek(1)">&gt;</button>
+        </div>
+        <div class="schedule-grid" id="scheduleGrid">
+            <!-- Render by JS -->
+        </div>
+    </div>
+
+    <!-- TAB ĐIỂM SỐ -->
+    <div id="viewGrades" style="display:none;">
+        <div style="margin-bottom: 16px;">
+            <p style="color: #666; font-size: 14px; margin: 0;">(Bấm vào từng học sinh để xem chi tiết điểm các môn)</p>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>MSSV</th>
+                    <th>Họ và Tên</th>
+                    <th>Điểm tổng kết (TBM)</th>
+                    <th>Danh hiệu</th>
+                </tr>
+            </thead>
+            <tbody id="gradesTableBody">
+                <!-- Render by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const token = "@Model.Token";
+    let myClassId = null;
+    let myClassName = "";
+    let globalGrades = [];
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Init date to today
+        document.getElementById('scheduleDate').valueAsDate = new Date();
+        await fetchMyClass();
+    });
+
+    async function fetchMyClass() {
+        try {
+            const res = await fetch('/api/web/class/my-classes');
+            if (res.ok) {
+                const classes = await res.json();
+                const homeroomClass = classes.find(c => c.isHomeroom === true);
+                if (homeroomClass) {
+                    myClassId = homeroomClass.id;
+                    myClassName = homeroomClass.name;
+                    document.getElementById('lblClassName').innerText = ` - ${myClassName}`;
+                    
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('mainContentView').style.display = 'block';
+                    
+                    loadSchedule();
+                    loadGrades();
+                } else {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('noClassView').style.display = 'block';
+                }
+            } else {
+                throw new Error("Cannot fetch classes");
+            }
+        } catch(e) {
+            console.error(e);
+            document.getElementById('loading').innerHTML = `<span style="color:red;">Lỗi tải dữ liệu.</span>`;
+        }
+    }
+
+    function switchTab(tab) {
+        document.getElementById('tabSchedule').classList.remove('active');
+        document.getElementById('tabGrades').classList.remove('active');
+        
+        document.getElementById('viewSchedule').style.display = 'none';
+        document.getElementById('viewGrades').style.display = 'none';
+        
+        if(tab === 'schedule') {
+            document.getElementById('tabSchedule').classList.add('active');
+            document.getElementById('viewSchedule').style.display = 'block';
+        } else {
+            document.getElementById('tabGrades').classList.add('active');
+            document.getElementById('viewGrades').style.display = 'block';
+        }
+    }
+
+    function getStartOfWeek(date) {
+        const d = new Date(date);
+        const day = d.getDay(); // 0 is Sun
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    }
+
+    function changeWeek(offset) {
+        const dateInput = document.getElementById('scheduleDate');
+        let d = new Date();
+        if (offset !== 0) {
+            d = new Date(dateInput.value);
+            d.setDate(d.getDate() + (offset * 7));
+        }
+        dateInput.valueAsDate = d;
+        loadSchedule();
+    }
+
+    async function loadSchedule() {
+        if (!myClassId) return;
+        const selectedDate = new Date(document.getElementById('scheduleDate').value);
+        const startOfWeek = getStartOfWeek(selectedDate);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 6);
+        
+        // Update Label
+        document.getElementById('weekLabel').innerText = `${startOfWeek.toLocaleDateString('vi-VN')} - ${endOfWeek.toLocaleDateString('vi-VN')}`;
+
+        const startStr = startOfWeek.toISOString().split('T')[0];
+        const endStr = endOfWeek.toISOString().split('T')[0];
+
+        try {
+            const res = await fetch(`/api/web/schedule?startDate=${startStr}&endDate=${endStr}&classId=${myClassId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const schedules = await res.json();
+                renderSchedule(schedules, startOfWeek);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function renderSchedule(schedules, startOfWeek) {
+        const grid = document.getElementById('scheduleGrid');
+        grid.innerHTML = '';
+        
+        // Header
+        const days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+        grid.innerHTML += `<div class="schedule-cell schedule-header">Ca học</div>`;
+        for(let i=0; i<7; i++) {
+            let d = new Date(startOfWeek);
+            d.setDate(d.getDate() + i);
+            grid.innerHTML += `<div class="schedule-cell schedule-header">${days[i]}<br/><small style="color:#888;">${d.toLocaleDateString('vi-VN')}</small></div>`;
+        }
+
+        const times = [
+            { slot: 1, time: '07:30 - 09:50' },
+            { slot: 2, time: '10:00 - 12:20' },
+            { slot: 3, time: '12:50 - 15:10' },
+            { slot: 4, time: '15:20 - 17:40' },
+            { slot: 5, time: '17:50 - 20:10' },
+            { slot: 6, time: '20:20 - 22:40' }
+        ];
+
+        for(let slot of times) {
+            grid.innerHTML += `<div class="schedule-cell"><span class="slot-label">Ca ${slot.slot}</span><br/><small>${slot.time}</small></div>`;
+            
+            for(let i=0; i<7; i++) {
+                let d = new Date(startOfWeek);
+                d.setDate(d.getDate() + i);
+                let dateStr = d.toISOString().split('T')[0];
+                
+                // Find schedule
+                let items = schedules.filter(s => s.rawSlot === slot.slot && s.date.startsWith(dateStr));
+                
+                let cellHtml = `<div class="schedule-cell">`;
+                items.forEach(item => {
+                    cellHtml += `
+                        <div class="schedule-item">
+                            <strong>${item.subjectCode}</strong>
+                            Phòng: ${item.room}<br/>
+                            GV: ${item.lecturer}
+                        </div>
+                    `;
+                });
+                cellHtml += `</div>`;
+                grid.insertAdjacentHTML('beforeend', cellHtml);
+            }
+        }
+    }
+
+    async function loadGrades() {
+        if (!myClassId) return;
+        try {
+            const res = await fetch(`/api/web/grades/class/${myClassId}`);
+            if (res.ok) {
+                globalGrades = await res.json();
+                processGrades(globalGrades);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function processGrades(grades) {
+        // Group by student
+        const studentMap = {};
+        
+        grades.forEach(g => {
+            if(!studentMap[g.studentId]) {
+                studentMap[g.studentId] = {
+                    studentId: g.studentId,
+                    studentName: g.studentName,
+                    totalScore: 0,
+                    subjectCount: 0
+                };
+            }
+            
+            // Calc average for this subject
+            // average = (AttendanceScore*0.1 + ((OralScore1+OralScore2+FifteenMinScore1+FifteenMinScore2)/4)*0.2 + MidtermScore*0.3 + FinalScore*0.4)
+            const att = g.attendanceScore || 0;
+            const o1 = g.oralScore1 || 0;
+            const o2 = g.oralScore2 || 0;
+            const f1 = g.fifteenMinScore1 || 0;
+            const f2 = g.fifteenMinScore2 || 0;
+            const mid = g.midtermScore || 0;
+            const fin = g.finalScore || 0;
+            
+            const subjAvg = (att * 0.1) + (((o1+o2+f1+f2)/4) * 0.2) + (mid * 0.3) + (fin * 0.4);
+            
+            studentMap[g.studentId].totalScore += subjAvg;
+            studentMap[g.studentId].subjectCount++;
+        });
+
+        const tbody = document.getElementById('gradesTableBody');
+        tbody.innerHTML = '';
+        
+        const students = Object.values(studentMap);
+        if (students.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Chưa có dữ liệu điểm số.</td></tr>`;
+            return;
+        }
+
+        // Sort by name or ID
+        students.sort((a,b) => a.studentId - b.studentId);
+
+        students.forEach(s => {
+            let finalAvg = s.subjectCount > 0 ? (s.totalScore / s.subjectCount).toFixed(1) : 0;
+            let finalAvgNum = parseFloat(finalAvg);
+            
+            let honor = "Yếu";
+            let honorClass = "honor-yeu";
+            if (finalAvgNum >= 8.0) { honor = "Giỏi"; honorClass = "honor-gioi"; }
+            else if (finalAvgNum >= 6.5) { honor = "Khá"; honorClass = "honor-kha"; }
+            else if (finalAvgNum >= 5.0) { honor = "Trung Bình"; honorClass = "honor-tb"; }
+            
+            tbody.innerHTML += `
+                <tr style="cursor:pointer;" onclick="window.location.href='/Teacher/ClassManagement/StudentGrades?StudentId=${s.studentId}&StudentName=${encodeURIComponent(s.studentName)}'" onmouseover="this.style.background='#F9F9F9'" onmouseout="this.style.background='white'">
+                    <td>HE${190000 + s.studentId}</td>
+                    <td>${s.studentName}</td>
+                    <td style="font-weight:bold; font-size:16px;">${finalAvg}</td>
+                    <td class="${honorClass}">${honor}</td>
+                </tr>
+            `;
+        });
+    }
+</script>

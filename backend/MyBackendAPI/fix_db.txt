@@ -1,0 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using MyBackendAPI.Data;
+using System.Linq;
+
+var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=MyFSchoolDB;Trusted_Connection=True;");
+using (var db = new AppDbContext(optionsBuilder.Options))
+{
+    var students = db.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).Where(u => u.UserRoles.Any(ur => ur.Role.RoleName == "Student") && u.ClassId == null).ToList();
+    foreach (var s in students)
+    {
+        Console.WriteLine($"Found missing student: {s.FullName} ({s.StudentId})");
+    }
+}
